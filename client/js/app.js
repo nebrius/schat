@@ -22,18 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
-import { dispatcher } from 'dispatcher';
-import { MainStoreController } from 'store_controllers/MainStoreController';
-import { ViewController } from 'view_controllers/ViewController';
+import { router } from 'router';
+import { LoginStoreController } from 'store_controllers/LoginStoreController';
+import { LoginViewController } from 'view_controllers/LoginViewController';
+import { DecryptStoreController } from 'store_controllers/DecryptStoreController';
+import { DecryptViewController } from 'view_controllers/DecryptViewController';
+import { ChatStoreController } from 'store_controllers/ChatStoreController';
+import { ChatViewController } from 'view_controllers/ChatViewController';
 
-let viewController = new ViewController();
-let storeController = new MainStoreController();
+router.registerRoute('login', {
+  storeController: LoginStoreController,
+  viewController: LoginViewController
+});
 
-aggregator.registerStoreController(storeController);
-aggregator.registerViewController(viewController);
+router.registerRoute('decrypt', {
+  storeController: DecryptStoreController,
+  viewController: DecryptViewController
+});
 
-dispatcher.registerStoreController(storeController);
+router.registerRoute('chat', {
+  storeController: ChatStoreController,
+  viewController: ChatViewController
+});
 
-viewController.onConnected();
-storeController.onConnected();
+router.route('login');

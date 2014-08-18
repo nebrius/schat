@@ -22,23 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
-import { events } from 'events';
+import React from 'react';
+import { LoginView } from 'views/LoginView';
 
-export class ChatStoreController {
-
-  constructor() {
+export class LoginViewController {
+  render(data) {
+    React.renderComponent(<LoginView data={ data }/>, document.getElementById('content'));
   }
-
-  trigger(event) {
-  }
-
-  render() {
-    return {};
-  }
-
   onConnected() {
-    aggregator.update();
   }
-
 }

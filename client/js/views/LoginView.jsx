@@ -28,15 +28,16 @@ import { events } from 'events';
 
 export let LoginView = React.createClass({
   render() {
+    debugger;
     return (
       <form role="form" onSubmit={this._onSubmit}>
         <div className="form-group">
-          <label for="exampleInputEmail1">Email address</label>
-          <input type="email" className="form-control" id="exampleInputEmail1" placeholder="Enter email" />
+          <label for="username">Username</label>
+          <input type="text" className="form-control" id="username" placeholder="Enter username" />
         </div>
         <div className="form-group">
-          <label for="exampleInputPassword1">Password</label>
-          <input type="password" className="form-control" id="exampleInputPassword1" placeholder="Password" />
+          <label for="password">Password</label>
+          <input type="password" className="form-control" id="password" placeholder="Enter password" />
         </div>
         <button type="submit" className="btn btn-default">Submit</button>
       </form>
@@ -46,7 +47,9 @@ export let LoginView = React.createClass({
   _onSubmit(e) {
     e.preventDefault();
     dispatcher.trigger({
-      type: events.LOGIN_SUBMITTED
-    })
+      type: events.LOGIN_SUBMITTED,
+      username: document.getElementById('username').value,
+      password: document.getElementById('password').value
+    });
   }
 });

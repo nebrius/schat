@@ -23,22 +23,29 @@ THE SOFTWARE.
 */
 
 import { aggregator } from 'aggregator';
-import { events } from 'events';
+import { dispatcher } from 'dispatcher';
 
-export class ChatStoreController {
+let routes = {};
 
-  constructor() {
+export let router = {
+  registerRoute(name, options) {
+    routes[name] = options;
+  },
+  route(newRoute) {
+    let routeOptions = routes[newRoute];
+    if (!routeOptions) {
+      throw new Error('Unknown route "' + newRoute + '"');
+    }
+
+    var storeController = new routeOptions.storeController();
+    var viewController = new routeOptions.viewController();
+
+    aggregator.registerStoreController(storeController);
+    aggregator.registerViewController(viewController);
+
+    dispatcher.registerStoreController(storeController);
+
+    viewController.onConnected && viewController.onConnected();
+    storeController.onConnected && storeController.onConnected();
   }
-
-  trigger(event) {
-  }
-
-  render() {
-    return {};
-  }
-
-  onConnected() {
-    aggregator.update();
-  }
-
-}
+};

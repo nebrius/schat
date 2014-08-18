@@ -24,20 +24,34 @@ THE SOFTWARE.
 
 import { aggregator } from 'aggregator';
 import { events } from 'events';
+import { router } from 'router';
 
-export class ChatStoreController {
+const STATE_IDLE = 0;
+const STATE_FAILED = 1;
 
-  constructor() {
-  }
+export class LoginStore {
 
   trigger(event) {
+    switch(event.type) {
+      case events.LOGIN_SUBMITTED:
+          if (event.username == 'user' && event.password == 'pass') {
+            router.route('decrypt');
+          } else {
+            this.state = STATE_FAILED;
+            aggregator.update();
+          }
+        break;
+    }
   }
 
   render() {
-    return {};
+    return {
+      loginFailed: this.state === STATE_FAILED
+    };
   }
 
   onConnected() {
+    this.state = STATE_IDLE;
     aggregator.update();
   }
 

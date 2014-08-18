@@ -22,32 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
-import { dispatcher } from 'dispatcher';
-import { events } from 'events';
+import { LoginStore } from 'stores/LoginStore';
 
 export class LoginStoreController {
 
-  constructor() {
-  }
-
   trigger(event) {
-    switch(event.type) {
-      case events.LOGIN_SUBMITTED:
-        // TODO: Wire up to backend API
-        dispatcher.trigger({
-          type: events.LOGIN_SUCCESSFUL
-        });
-        break;
-    }
+    this.store.trigger(event);
   }
 
   render() {
-    return {};
+    return this.store.render();
   }
 
   onConnected() {
-    aggregator.update();
+    this.store = new LoginStore();
+    this.store.onConnected();
   }
 
 }

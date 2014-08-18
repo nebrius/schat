@@ -22,31 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+import React from 'react';
+import { dispatcher } from 'dispatcher';
 import { events } from 'events';
-import { ChatStoreController } from 'store_controllers/ChatStoreController';
-import { LoginStoreController } from 'store_controllers/LoginStoreController';
 
-export class MainStoreController {
-
-  constructor() {
-    this.store = new LoginStoreController();
-  }
-
-  trigger(event) {
-    if (event.type == events.LOGIN_SUCCESSFUL) {
-      this.store = new ChatStoreController();
-      this.store.onConnected();
-    } else {
-      this.store.trigger(event);
-    }
-  }
-
+export let DecryptView = React.createClass({
   render() {
-    return this.store.render();
+    return (
+      <div>Decrypting</div>
+    );
   }
-
-  onConnected() {
-    this.store.onConnected();
-  }
-
-}
+});
