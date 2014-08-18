@@ -24,16 +24,30 @@ THE SOFTWARE.
 
 import { aggregator } from 'aggregator';
 import { dispatcher } from 'dispatcher';
-import { MainStoreController } from 'store_controllers/MainStoreController';
-import { ViewController } from 'view_controllers/ViewController';
+import { events } from 'events';
 
-let viewController = new ViewController();
-let storeController = new MainStoreController();
+export class LoginStoreController {
 
-aggregator.registerStoreController(storeController);
-aggregator.registerViewController(viewController);
+  constructor() {
+  }
 
-dispatcher.registerStoreController(storeController);
+  trigger(event) {
+    switch(event.type) {
+      case events.LOGIN_SUBMITTED:
+        // TODO: Wire up to backend API
+        dispatcher.trigger({
+          type: events.LOGIN_SUCCESSFUL
+        });
+        break;
+    }
+  }
 
-viewController.onConnected();
-storeController.onConnected();
+  render() {
+    return {};
+  }
+
+  onConnected() {
+    aggregator.update();
+  }
+
+}

@@ -22,18 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
-import { dispatcher } from 'dispatcher';
-import { MainStoreController } from 'store_controllers/MainStoreController';
-import { ViewController } from 'view_controllers/ViewController';
-
-let viewController = new ViewController();
-let storeController = new MainStoreController();
-
-aggregator.registerStoreController(storeController);
-aggregator.registerViewController(viewController);
-
-dispatcher.registerStoreController(storeController);
-
-viewController.onConnected();
-storeController.onConnected();
+export let events = {
+  LOGIN_SUBMITTED: 0,
+  LOGIN_FAILED: 1,
+  LOGIN_SUCCESSFUL: 2
+};

@@ -22,18 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
-import { dispatcher } from 'dispatcher';
-import { MainStoreController } from 'store_controllers/MainStoreController';
-import { ViewController } from 'view_controllers/ViewController';
+import { events } from 'events';
+import { ChatStoreController } from 'store_controllers/ChatStoreController';
+import { LoginStoreController } from 'store_controllers/LoginStoreController';
 
-let viewController = new ViewController();
-let storeController = new MainStoreController();
+export class MainStoreController {
 
-aggregator.registerStoreController(storeController);
-aggregator.registerViewController(viewController);
+  constructor() {
+    this.store = new LoginStoreController();
+  }
 
-dispatcher.registerStoreController(storeController);
+  trigger(event) {
+    if (event.type == events.LOGIN_SUCCESSFUL) {
+      this.store = new ChatStoreController();
+      this.store.onConnected();
+    } else {
+      this.store.trigger(event);
+    }
+  }
 
-viewController.onConnected();
-storeController.onConnected();
+  render() {
+    return this.store.render();
+  }
+
+  onConnected() {
+    this.store.onConnected();
+  }
+
+}

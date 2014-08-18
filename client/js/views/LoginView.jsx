@@ -22,18 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
+import React from 'react';
 import { dispatcher } from 'dispatcher';
-import { MainStoreController } from 'store_controllers/MainStoreController';
-import { ViewController } from 'view_controllers/ViewController';
+import { events } from 'events';
 
-let viewController = new ViewController();
-let storeController = new MainStoreController();
+export let LoginView = React.createClass({
+  render() {
+    return (
+      <form role="form" onSubmit={this._onSubmit}>
+        <div className="form-group">
+          <label for="exampleInputEmail1">Email address</label>
+          <input type="email" className="form-control" id="exampleInputEmail1" placeholder="Enter email" />
+        </div>
+        <div className="form-group">
+          <label for="exampleInputPassword1">Password</label>
+          <input type="password" className="form-control" id="exampleInputPassword1" placeholder="Password" />
+        </div>
+        <button type="submit" className="btn btn-default">Submit</button>
+      </form>
+    );
+  },
 
-aggregator.registerStoreController(storeController);
-aggregator.registerViewController(viewController);
-
-dispatcher.registerStoreController(storeController);
-
-viewController.onConnected();
-storeController.onConnected();
+  _onSubmit(e) {
+    e.preventDefault();
+    dispatcher.trigger({
+      type: events.LOGIN_SUBMITTED
+    })
+  }
+});

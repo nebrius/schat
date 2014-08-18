@@ -28,7 +28,7 @@ var traceur = require('gulp-traceur');
 var del = require('del');
 
 gulp.task('default', ['clean'], function() {
-  return gulp.start(['index.html', 'libs', 'js']);
+  return gulp.start(['index.html', 'libs', 'css', 'js']);
 });
 
 gulp.task('index.html', function() {
@@ -39,6 +39,11 @@ gulp.task('index.html', function() {
 gulp.task('libs', function() {
   return gulp.src('client/lib/*')
     .pipe(gulp.dest('client-dist/lib'));
+});
+
+gulp.task('css', function() {
+  return gulp.src('client/css/*')
+    .pipe(gulp.dest('client-dist/css'));
 });
 
 gulp.task('js', function() {

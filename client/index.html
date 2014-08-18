@@ -24,7 +24,10 @@ THE SOFTWARE.
 <!DOCTYPE html>
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Hello React</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
     <script src="lib/traceur-runtime.js"></script>
     <script data-main="js/app.js" src="lib/require.js"></script>
     <script>
@@ -35,6 +38,11 @@ THE SOFTWARE.
         }
       });
     </script>
+    <style>
+      #content {
+        margin: 10px;
+      }
+    </style>
   </head>
   <body>
     <div id="content"></div>

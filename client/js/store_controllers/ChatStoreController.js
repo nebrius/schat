@@ -22,11 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-define(['aggregator'], function(aggregator) {
-  function CommentStore() {}
-  CommentStore.prototype.handleDispatch = function handleDispatch(payload, cb) {
-    console.log('hi');
-    cb();
-  };
-  return CommentStore;
-});
+import { aggregator } from 'aggregator';
+import { events } from 'events';
+
+export class ChatStoreController {
+
+  constructor() {
+  }
+
+  trigger(event) {
+  }
+
+  render() {
+    return {
+      chat: true
+    };
+  }
+
+  onConnected() {
+    aggregator.update();
+  }
+
+}

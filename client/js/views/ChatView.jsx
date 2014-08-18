@@ -22,18 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
+import React from 'react';
 import { dispatcher } from 'dispatcher';
-import { MainStoreController } from 'store_controllers/MainStoreController';
-import { ViewController } from 'view_controllers/ViewController';
+import { events } from 'events';
 
-let viewController = new ViewController();
-let storeController = new MainStoreController();
-
-aggregator.registerStoreController(storeController);
-aggregator.registerViewController(viewController);
-
-dispatcher.registerStoreController(storeController);
-
-viewController.onConnected();
-storeController.onConnected();
+export let ChatView = React.createClass({
+  render() {
+    return (
+      <div>Chatting</div>
+    );
+  }
+});
