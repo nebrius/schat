@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { router } from 'router';
+import { router } from 'flvx';
 import { LoginStoreController } from 'store_controllers/LoginStoreController';
 import { LoginViewController } from 'view_controllers/LoginViewController';
 import { DecryptStoreController } from 'store_controllers/DecryptStoreController';

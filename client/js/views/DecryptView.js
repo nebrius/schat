@@ -23,13 +23,11 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { dispatcher } from 'dispatcher';
+import { dispatcher } from 'flvx';
 import { events } from 'events';
 
 export let DecryptView = React.createClass({
   render() {
-    return (
-      <div>Decrypting</div>
-    );
+    return new React.DOM.div(null, 'Decrypting');
   }
 });

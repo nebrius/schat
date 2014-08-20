@@ -23,12 +23,10 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { ChatView } from 'views/ChatView';
+import { LoginView } from 'views/LoginView';
 
-export class ChatViewController {
+export class LoginViewController {
   render(data) {
-    React.renderComponent(<ChatView data={ data }/>, document.getElementById('content'));
-  }
-  onConnected() {
+    React.renderComponent(new LoginView(data), document.getElementById('content'));
   }
 }

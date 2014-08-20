@@ -23,25 +23,42 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { dispatcher } from 'dispatcher';
+import { dispatcher } from 'flvx';
 import { events } from 'events';
 
 export let LoginView = React.createClass({
   render() {
-    debugger;
-    return (
-      <form role="form" onSubmit={this._onSubmit}>
-        <div className="form-group">
-          <label for="username">Username</label>
-          <input type="text" className="form-control" id="username" placeholder="Enter username" />
-        </div>
-        <div className="form-group">
-          <label for="password">Password</label>
-          <input type="password" className="form-control" id="password" placeholder="Enter password" />
-        </div>
-        <button type="submit" className="btn btn-default">Submit</button>
-      </form>
-    );
+    return new React.DOM.form({
+      onSubmit: this._onSubmit
+    }, [
+      this.props.loginError ? React.DOM.div({ className: 'alert alert-danger' }, this.props.loginError) : null,
+      new React.DOM.div({
+        className: 'form-group'
+      }, [
+        new React.DOM.label(null, 'Username'),
+        new React.DOM.input({
+          type: 'text',
+          className: 'form-control',
+          id: 'username',
+          placeholder: 'Enter username'
+        })
+      ]),
+      new React.DOM.div({
+        className: 'form-group'
+      }, [
+        new React.DOM.label(null, 'Password'),
+        new React.DOM.input({
+          type: 'password',
+          className: 'form-control',
+          id: 'password',
+          placeholder: 'Enter password'
+        })
+      ]),
+      new React.DOM.button({
+        type: 'submit',
+        className: 'btn btn-default'
+      }, 'Submit')
+    ]);
   },
 
   _onSubmit(e) {

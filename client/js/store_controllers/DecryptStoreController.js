@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
+import { aggregator } from 'flvx';
 import { events } from 'events';
 
 export class DecryptStoreController {

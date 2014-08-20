@@ -23,7 +23,6 @@ THE SOFTWARE.
 */
 
 var gulp = require('gulp');
-var react = require('gulp-react');
 var traceur = require('gulp-traceur');
 var del = require('del');
 
@@ -48,9 +47,6 @@ gulp.task('css', function() {
 
 gulp.task('js', function() {
   return gulp.src('client/js/**/*')
-    .pipe(react({
-      harmony: true
-    }))
     .pipe(traceur({
       experimental: true,
       modules: 'amd'

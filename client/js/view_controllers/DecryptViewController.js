@@ -23,13 +23,10 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { dispatcher } from 'dispatcher';
-import { events } from 'events';
+import { DecryptView } from 'views/DecryptView';
 
-export let ChatView = React.createClass({
-  render() {
-    return (
-      <div>Chatting</div>
-    );
+export class DecryptViewController {
+  render(data) {
+    React.renderComponent(new DecryptView(data), document.getElementById('content'));
   }
-});
+}

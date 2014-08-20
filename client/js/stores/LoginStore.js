@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
+import { aggregator } from 'flvx';
+import { router } from 'flvx';
 import { events } from 'events';
-import { router } from 'router';
 
 const STATE_IDLE = 0;
 const STATE_FAILED = 1;
@@ -37,7 +37,7 @@ export class LoginStore {
           if (event.username == 'user' && event.password == 'pass') {
             router.route('decrypt');
           } else {
-            this.state = STATE_FAILED;
+            this.error = 'Invalid username and password';
             aggregator.update();
           }
         break;
@@ -46,7 +46,7 @@ export class LoginStore {
 
   render() {
     return {
-      loginFailed: this.state === STATE_FAILED
+      loginError: this.error
     };
   }
 

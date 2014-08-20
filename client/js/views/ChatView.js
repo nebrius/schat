@@ -23,12 +23,11 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { DecryptView } from 'views/DecryptView';
+import { dispatcher } from 'flvx';
+import { events } from 'events';
 
-export class DecryptViewController {
-  render(data) {
-    React.renderComponent(<DecryptView data={ data }/>, document.getElementById('content'));
+export let ChatView = React.createClass({
+  render() {
+    return new React.DOM.div(null, 'Chatting');
   }
-  onConnected() {
-  }
-}
+});

@@ -22,30 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'aggregator';
-import { dispatcher } from 'dispatcher';
+import React from 'react';
+import { ChatView } from 'views/ChatView';
 
-let routes = {};
-
-export let router = {
-  registerRoute(name, options) {
-    routes[name] = options;
-  },
-  route(newRoute) {
-    let routeOptions = routes[newRoute];
-    if (!routeOptions) {
-      throw new Error('Unknown route "' + newRoute + '"');
-    }
-
-    var storeController = new routeOptions.storeController();
-    var viewController = new routeOptions.viewController();
-
-    aggregator.registerStoreController(storeController);
-    aggregator.registerViewController(viewController);
-
-    dispatcher.registerStoreController(storeController);
-
-    viewController.onConnected && viewController.onConnected();
-    storeController.onConnected && storeController.onConnected();
+export class ChatViewController {
+  render(data) {
+    React.renderComponent(new ChatView(data), document.getElementById('content'));
   }
-};
+}
