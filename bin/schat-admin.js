@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
 The MIT License (MIT)
 
@@ -22,10 +23,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-var program = require('commander');
-
-module.exports = function run(argv) {
-  require('./schat')({
-    port: 8000
-  });
-}
+require(require('path').join(__dirname, '..', 'server', 'admin'))(process.argv);
