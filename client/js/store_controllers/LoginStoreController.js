@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+import { StoreController } from 'flvx';
 import { LoginStore } from 'stores/LoginStore';
 
-export class LoginStoreController {
+export class LoginStoreController extends StoreController {
 
   trigger(event) {
     this.store.trigger(event);

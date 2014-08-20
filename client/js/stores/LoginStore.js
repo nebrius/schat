@@ -22,14 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'flvx';
+import { Store, aggregator } from 'flvx';
 import { router } from 'flvx';
 import { events } from 'events';
 
 const STATE_IDLE = 0;
 const STATE_FAILED = 1;
 
-export class LoginStore {
+export class LoginStore extends Store {
 
   trigger(event) {
     switch(event.type) {

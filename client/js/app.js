@@ -31,18 +31,18 @@ import { ChatStoreController } from 'store_controllers/ChatStoreController';
 import { ChatViewController } from 'view_controllers/ChatViewController';
 
 router.registerRoute('login', {
-  storeController: LoginStoreController,
-  viewController: LoginViewController
+  storeController: new LoginStoreController(),
+  viewController: new LoginViewController()
 });
 
 router.registerRoute('decrypt', {
-  storeController: DecryptStoreController,
-  viewController: DecryptViewController
+  storeController: new DecryptStoreController(),
+  viewController: new DecryptViewController()
 });
 
 router.registerRoute('chat', {
-  storeController: ChatStoreController,
-  viewController: ChatViewController
+  storeController: new ChatStoreController(),
+  viewController: new ChatViewController()
 });
 
 router.route('login');

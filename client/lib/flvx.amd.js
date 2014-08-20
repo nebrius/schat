@@ -2,27 +2,42 @@ define([], function() {
   "use strict";
   var storeController = Symbol();
   var viewController = Symbol();
-  var registerStoreController = Symbol();
-  var registerViewController = Symbol();
-  var Aggregator = function Aggregator() {
-    var $__0 = this;
-    $traceurRuntime.setProperty(this, registerStoreController, (function(vc) {
-      $traceurRuntime.setProperty($__0, storeController, vc);
-    }));
-    $traceurRuntime.setProperty(this, registerViewController, (function(vc) {
-      $traceurRuntime.setProperty($__0, viewController, vc);
-    }));
-  };
+  var StoreController = function StoreController() {};
+  ($traceurRuntime.createClass)(StoreController, {
+    trigger: function() {
+      throw new Error('"trigger" must be implemented by a derived store controller');
+    },
+    render: function() {
+      throw new Error('"render" must be implemented by a derived store controller');
+    },
+    onConnected: function() {},
+    onDisconnected: function() {}
+  }, {});
+  var Store = function Store() {};
+  ($traceurRuntime.createClass)(Store, {
+    trigger: function() {
+      throw new Error('"trigger" must be implemented by a derived store');
+    },
+    render: function() {
+      throw new Error('"render" must be implemented by a derived store');
+    },
+    onConnected: function() {},
+    onDisconnected: function() {}
+  }, {});
+  var ViewController = function ViewController() {};
+  ($traceurRuntime.createClass)(ViewController, {
+    render: function() {
+      throw new Error('"render" must be implemented by a derived view controller');
+    },
+    onConnected: function() {},
+    onDisconnected: function() {}
+  }, {});
+  var Aggregator = function Aggregator() {};
   ($traceurRuntime.createClass)(Aggregator, {update: function() {
       this[$traceurRuntime.toProperty(viewController)].render(this[$traceurRuntime.toProperty(storeController)].render());
     }}, {});
   var aggregator = new Aggregator();
-  var Dispatcher = function Dispatcher() {
-    var $__0 = this;
-    $traceurRuntime.setProperty(this, registerStoreController, (function(vc) {
-      $traceurRuntime.setProperty($__0, storeController, vc);
-    }));
-  };
+  var Dispatcher = function Dispatcher() {};
   ($traceurRuntime.createClass)(Dispatcher, {trigger: function(event) {
       this[$traceurRuntime.toProperty(storeController)].trigger(event);
     }}, {});
@@ -33,6 +48,12 @@ define([], function() {
   };
   ($traceurRuntime.createClass)(Router, {
     registerRoute: function(name, options) {
+      if (!(options.storeController instanceof StoreController)) {
+        throw new Error('Invalid store controller');
+      }
+      if (!(options.viewController instanceof ViewController)) {
+        throw new Error('Invalid view controller');
+      }
       $traceurRuntime.setProperty(this[$traceurRuntime.toProperty(routes)], name, options);
     },
     route: function(newRoute) {
@@ -40,17 +61,28 @@ define([], function() {
       if (!routeOptions) {
         throw new Error('Unknown route "' + newRoute + '"');
       }
-      var storeController = new routeOptions.storeController();
-      var viewController = new routeOptions.viewController();
-      aggregator[$traceurRuntime.toProperty(registerStoreController)](storeController);
-      aggregator[$traceurRuntime.toProperty(registerViewController)](viewController);
-      dispatcher[$traceurRuntime.toProperty(registerStoreController)](storeController);
-      viewController.onConnected && viewController.onConnected();
-      storeController.onConnected && storeController.onConnected();
+      if (aggregator[$traceurRuntime.toProperty(storeController)]) {
+        aggregator[$traceurRuntime.toProperty(storeController)].onDisconnected();
+        aggregator[$traceurRuntime.toProperty(viewController)].onDisconnected();
+      }
+      $traceurRuntime.setProperty(aggregator, storeController, routeOptions.storeController);
+      $traceurRuntime.setProperty(aggregator, viewController, routeOptions.viewController);
+      $traceurRuntime.setProperty(dispatcher, storeController, routeOptions.storeController);
+      routeOptions.storeController.onConnected();
+      routeOptions.storeController.onConnected();
     }
   }, {});
   var router = new Router();
   return {
+    get StoreController() {
+      return StoreController;
+    },
+    get Store() {
+      return Store;
+    },
+    get ViewController() {
+      return ViewController;
+    },
     get aggregator() {
       return aggregator;
     },

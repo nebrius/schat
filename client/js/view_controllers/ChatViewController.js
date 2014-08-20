@@ -23,9 +23,10 @@ THE SOFTWARE.
 */
 
 import React from 'react';
+import { ViewController } from 'flvx';
 import { ChatView } from 'views/ChatView';
 
-export class ChatViewController {
+export class ChatViewController extends ViewController {
   render(data) {
     React.renderComponent(new ChatView(data), document.getElementById('content'));
   }

@@ -22,13 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { aggregator } from 'flvx';
-import { events } from 'events';
+import { StoreController, aggregator } from 'flvx';
 
-export class DecryptStoreController {
-
-  constructor() {
-  }
+export class DecryptStoreController extends StoreController {
 
   trigger(event) {
   }

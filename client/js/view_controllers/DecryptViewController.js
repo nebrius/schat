@@ -23,9 +23,10 @@ THE SOFTWARE.
 */
 
 import React from 'react';
+import { ViewController } from 'flvx';
 import { DecryptView } from 'views/DecryptView';
 
-export class DecryptViewController {
+export class DecryptViewController extends ViewController {
   render(data) {
     React.renderComponent(new DecryptView(data), document.getElementById('content'));
   }

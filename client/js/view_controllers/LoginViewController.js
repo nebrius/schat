@@ -23,9 +23,10 @@ THE SOFTWARE.
 */
 
 import React from 'react';
+import { ViewController } from 'flvx';
 import { LoginView } from 'views/LoginView';
 
-export class LoginViewController {
+export class LoginViewController extends ViewController {
   render(data) {
     React.renderComponent(new LoginView(data), document.getElementById('content'));
   }
