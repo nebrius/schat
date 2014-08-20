@@ -25,7 +25,11 @@ THE SOFTWARE.
 var program = require('commander');
 
 module.exports = function run(argv) {
+  program
+    .version(require('../package.json').version)
+    .option('-p, --port [port]', 'Creates a user')
+    .parse(argv);
   require('./schat')({
-    port: 8000
+    port: parseInt(program.port) || 8000
   });
 }

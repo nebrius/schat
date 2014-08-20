@@ -47,6 +47,9 @@ module.exports = function run(options) {
 
   // Load user management
   var users = new UserManagement();
+  var users = new UserManagement({
+    database: 'schat_users'
+  });
   users.load(function(err) {
     if (err) {
       throw err;
@@ -55,6 +58,7 @@ module.exports = function run(options) {
     // Create the server
     var app = express();
     app.use('/', express.static(path.join(__dirname, '..', 'client')));
+    app.use('/', express.static(path.join(__dirname, '..', 'client-dist')));
     app.use(cookieParser);
 
     // Start the server
