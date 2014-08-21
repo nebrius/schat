@@ -27,6 +27,7 @@ var Logger = require('transport-logger');
 var UserManagement = require('user-management');
 var express = require('express');
 var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser')
 
 module.exports = function run(options) {
 
@@ -46,7 +47,6 @@ module.exports = function run(options) {
   }
 
   // Load user management
-  var users = new UserManagement();
   var users = new UserManagement({
     database: 'schat_users'
   });
@@ -57,10 +57,25 @@ module.exports = function run(options) {
 
     // Create the server
     var app = express();
-    app.use('/', express.static(path.join(__dirname, '..', 'client')));
     app.use('/', express.static(path.join(__dirname, '..', 'client-dist')));
-    app.use(cookieParser);
+    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(cookieParser());
 
+    // Auth endpoint
+    app.post('/api/auth', function(request, response) {
+      var username = request.body.username;
+      var password = request.body.password;
+      users.authenticateUser(username, password, function(err, result) {
+        if (err) {
+          response.status(500).send('internal error');
+        } else if (!result.userExists || !result.passwordsMatch) {
+          response.status(401).send('unauthorized');
+        } else {
+          response.cookie('token', result.token);
+          response.status(200).send('ok');
+        }
+      });
+    });
     // Start the server
     app.listen(options.port, '127.0.0.1');
     logger.info('Server listening on port ' + options.port);

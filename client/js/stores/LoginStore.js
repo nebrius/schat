@@ -26,20 +26,31 @@ import { Store, aggregator } from 'flvx';
 import { router } from 'flvx';
 import { events } from 'events';
 
-const STATE_IDLE = 0;
-const STATE_FAILED = 1;
-
 export class LoginStore extends Store {
 
   trigger(event) {
     switch(event.type) {
       case events.LOGIN_SUBMITTED:
-          if (event.username == 'user' && event.password == 'pass') {
-            router.route('decrypt');
-          } else {
-            this.error = 'Invalid username and password';
-            aggregator.update();
+        let xhr = new XMLHttpRequest();
+        let data = 'username=' + event.username + '&password=' + event.password;
+        xhr.onload = () => {
+          switch(xhr.status) {
+            case 500:
+              this.error = 'Server Error';
+              aggregator.update();
+              break;
+            case 401:
+              this.error = 'Invalid username or password';
+              aggregator.update();
+              break;
+            case 200:
+              router.route('decrypt');
+              break;
           }
+        };
+        xhr.open('post', '/api/auth', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(data);
         break;
     }
   }
@@ -51,7 +62,6 @@ export class LoginStore extends Store {
   }
 
   onConnected() {
-    this.state = STATE_IDLE;
     aggregator.update();
   }
 

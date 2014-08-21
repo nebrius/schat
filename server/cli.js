@@ -32,4 +32,4 @@ module.exports = function run(argv) {
   require('./schat')({
     port: parseInt(program.port) || 8000
   });
-}
+};
