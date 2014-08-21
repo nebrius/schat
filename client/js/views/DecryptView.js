@@ -28,6 +28,33 @@ import { events } from 'events';
 
 export let DecryptView = React.createClass({
   render() {
-    return new React.DOM.div(null, 'Decrypting');
+    return new React.DOM.form({
+      onSubmit: this._onSubmit
+    }, [
+      this.props.loginError ? React.DOM.div({ className: 'alert alert-danger' }, this.props.loginError) : null,
+      new React.DOM.div({
+        className: 'form-group'
+      }, [
+        new React.DOM.label(null, 'Decryption Password'),
+        new React.DOM.input({
+          type: 'password',
+          className: 'form-control',
+          id: 'password',
+          placeholder: 'Enter password'
+        })
+      ]),
+      new React.DOM.button({
+        type: 'submit',
+        className: 'btn btn-default'
+      }, 'Submit')
+    ]);
+  },
+
+  _onSubmit(e) {
+    e.preventDefault();
+    dispatcher.trigger({
+      type: events.DECRYPTION_PASSWORD_SUBMITTED,
+      password: document.getElementById('password').value
+    });
   }
 });

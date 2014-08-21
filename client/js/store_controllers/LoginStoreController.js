@@ -22,22 +22,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController } from 'flvx';
-import { LoginStore } from 'stores/LoginStore';
+import { StoreController, aggregator, router } from 'flvx';
+import { events } from 'events';
+
+let error = Symbol();
 
 export class LoginStoreController extends StoreController {
 
   trigger(event) {
-    this.store.trigger(event);
+    switch(event.type) {
+      case events.LOGIN_SUBMITTED:
+        let xhr = new XMLHttpRequest();
+        let data = 'username=' + event.username + '&password=' + event.password;
+        xhr.onload = () => {
+          switch(xhr.status) {
+            case 401:
+              this[error] = 'Invalid username or password';
+              aggregator.update();
+              break;
+            case 200:
+              router.route('decrypt', {
+                token: xhr.responseText
+              });
+              break;
+            default:
+              this[error] = 'Server Error';
+              aggregator.update();
+              break;
+          }
+        };
+        xhr.open('post', '/api/auth', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(data);
+        break;
+    }
   }
 
   render() {
-    return this.store.render();
+    return {
+      error: this[error]
+    };
   }
 
-  onConnected() {
-    this.store = new LoginStore();
-    this.store.onConnected();
+  onConnected(data) {
+    this[error] = data.error;
+    aggregator.update();
   }
 
 }

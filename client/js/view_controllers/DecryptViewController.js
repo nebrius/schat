@@ -28,6 +28,8 @@ import { DecryptView } from 'views/DecryptView';
 
 export class DecryptViewController extends ViewController {
   render(data) {
-    React.renderComponent(new DecryptView(data), document.getElementById('content'));
+    if (!data.loading) {
+      React.renderComponent(new DecryptView(data), document.getElementById('content'));
+    }
   }
 }
