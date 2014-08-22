@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 import { StoreController, aggregator, router } from 'flvx';
 import { events } from 'events';
+import { api } from 'util/api';
 
 let error = Symbol();
 
@@ -32,17 +33,22 @@ export class LoginStoreController extends StoreController {
   trigger(event) {
     switch(event.type) {
       case events.LOGIN_SUBMITTED:
-        let xhr = new XMLHttpRequest();
-        let data = 'username=' + event.username + '&password=' + event.password;
-        xhr.onload = () => {
-          switch(xhr.status) {
+        api({
+          method: 'post',
+          endpoint: 'auth',
+          content: {
+            username: event.username,
+            password: event.password
+          }
+        }, (status, response) => {
+          switch(status) {
             case 401:
               this[error] = 'Invalid username or password';
               aggregator.update();
               break;
             case 200:
               router.route('decrypt', {
-                token: xhr.responseText
+                token: response
               });
               break;
             default:
@@ -50,10 +56,7 @@ export class LoginStoreController extends StoreController {
               aggregator.update();
               break;
           }
-        };
-        xhr.open('post', '/api/auth', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.send(data);
+        });
         break;
     }
   }

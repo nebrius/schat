@@ -59,6 +59,11 @@ module.exports = function run(options) {
     app.use('/', express.static(path.join(__dirname, '..', 'client-dist')));
     app.use(bodyParser.urlencoded({ extended: false }));
 
+    // The various URI encoding/decoding that goes on with tokens results in a slight mangling of the token
+    function decodeToken(token) {
+      return decodeURIComponent(token).replace(/\s/g, '+');
+    }
+
     // Auth endpoint
     app.post('/api/auth', function(request, response) {
       var username = request.body.username;
@@ -76,7 +81,7 @@ module.exports = function run(options) {
 
     // Cipher check
     app.get('/api/cipher_check', function(request, response) {
-      var token = request.query.token;
+      var token = decodeToken(request.query.token);
       users.isTokenValid(token, function(err, valid) {
         if (err) {
           response.status(500).send('internal error');

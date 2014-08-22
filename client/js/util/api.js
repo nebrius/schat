@@ -22,54 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregator, router } from 'flvx';
-import { api } from 'util/api';
-
-let token = Symbol();
-let loading = Symbol();
-let cipherCheck = Symbol();
-let error = Symbol();
-
-export class DecryptStoreController extends StoreController {
-
-  trigger(event) {
+export function api(config, cb) {
+  let xhr = new XMLHttpRequest();
+  let data = [];
+  config.content = config.content || {};
+  for (let p in config.content) {
+    data.push(p + '=' + config.content[p]);
   }
+  data = data.join('&');
+  xhr.onload = () => {
+    cb(xhr.status, xhr.responseText);
+  };
 
-  render() {
-    return {
-      loading: this[loading],
-      error: this[error]
-    };
+  if (config.method == 'post') {
+    xhr.open('post', '/api/' + config.endpoint, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.send(data);
+  } else if (config.method == 'get') {
+    xhr.open('get', '/api/' + config.endpoint + '?' + data, true);
+    xhr.send();
+  } else {
+    throw new Error('Unsupported API method "' + config.method + '"');
   }
-
-  onConnected(data) {
-    this[loading] = true;
-    this[token] = data.token;
-
-    aggregator.update();
-
-    api({
-      method: 'get',
-      endpoint: 'cipher_check',
-      content: {
-        token: this[token]
-      }
-    }, (status, response) => {
-      switch(status) {
-        case 401:
-          router.route('login', { error: 'Expired session. Please login again.' });
-          break;
-        case 200:
-          this[loading] = false;
-          this[cipherCheck] = response;
-          aggregator.update();
-          break;
-        default:
-          this[error] = 'Server Error';
-          aggregator.update();
-          break;
-      }
-    });
-  }
-
 }
