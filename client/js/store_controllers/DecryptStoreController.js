@@ -24,52 +24,61 @@ THE SOFTWARE.
 
 import { StoreController, aggregator, router } from 'flvx';
 import { api } from 'util/api';
+import { events } from 'events';
 
 let token = Symbol();
-let loading = Symbol();
-let cipherCheck = Symbol();
 let error = Symbol();
+let type = Symbol();
+let test = Symbol();
 
 export class DecryptStoreController extends StoreController {
 
   trigger(event) {
+    switch(event.type) {
+      case events.DECRYPTION_PASSWORD_SUBMITTED:
+        router.route('chat', {
+          token: this[token],
+          password: event.password
+        });
+        break;
+      case events.DECRYPTION_PASSWORD_PAIR_SUBMITTED:
+        if (event.password1 !== event.password2) {
+          this[error] = 'Passwords do not match';
+          aggregator.update();
+        } else if (!event.password1) {
+          this[error] = 'Passwords must not be empty';
+          aggregator.update();
+        } else {
+
+        }
+        break;
+    }
   }
 
   render() {
     return {
-      loading: this[loading],
+      type: this[type],
       error: this[error]
     };
   }
 
   onConnected(data) {
-    this[loading] = true;
     this[token] = data.token;
-
-    aggregator.update();
-
     api({
       method: 'get',
-      endpoint: 'cipher_check',
+      endpoint: 'test',
       content: {
         token: this[token]
       }
     }, (status, response) => {
-      switch(status) {
-        case 401:
-          router.route('login', { error: 'Expired session. Please login again.' });
-          break;
-        case 200:
-          this[loading] = false;
-          this[cipherCheck] = response;
-          aggregator.update();
-          break;
-        default:
-          this[error] = 'Server Error';
-          aggregator.update();
-          break;
+      if (status == 404) {
+        this[type] = 'new';
+      } else {
+        this[type] = 'existing';
+        this[test] = response;
       }
+      aggregator.update();
     });
+    aggregator.update();
   }
-
 }

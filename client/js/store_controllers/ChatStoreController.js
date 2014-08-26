@@ -23,6 +23,10 @@ THE SOFTWARE.
 */
 
 import { StoreController, aggregator } from 'flvx';
+import { api } from 'util/api';
+
+let token = Symbol();
+let password = Symbol();
 
 export class ChatStoreController extends StoreController {
 
@@ -33,8 +37,22 @@ export class ChatStoreController extends StoreController {
     return {};
   }
 
-  onConnected() {
+  onConnected(data) {
+    this[password] = data.password;
+    this[token] = data.token;
     aggregator.update();
+    api({
+      method: 'get',
+      endpoint: 'messages',
+      content: {
+        start: 0,
+        count: 100,
+        password: this[password],
+        token: this[token]
+      }
+    }, (status, response) => {
+      debugger;
+    });
   }
 
 }

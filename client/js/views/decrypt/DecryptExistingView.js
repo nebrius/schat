@@ -25,19 +25,29 @@ THE SOFTWARE.
 import React from 'react';
 import { dispatcher } from 'flvx';
 import { events } from 'events';
-import { DecryptExistingView } from 'views/decrypt/DecryptExistingView';
-import { DecryptNewView } from 'views/decrypt/DecryptNewView';
 
-
-export let DecryptView = React.createClass({
+export let DecryptExistingView = React.createClass({
   render() {
-    if (this.props.type == 'existing') {
-      return DecryptExistingView(this.props);
-    } else if (this.props.type == 'new') {
-      return DecryptNewView(this.props);
-    } else {
-      return new React.DOM.div(null, null);
-    }
+    return new React.DOM.form({
+      onSubmit: this._onSubmit
+    }, [
+      this.props.error ? React.DOM.div({ className: 'alert alert-danger' }, this.props.error) : null,
+      new React.DOM.div({
+        className: 'form-group'
+      }, [
+        new React.DOM.label(null, 'Decryption Password'),
+        new React.DOM.input({
+          type: 'password',
+          className: 'form-control',
+          id: 'password',
+          placeholder: 'Enter password'
+        })
+      ]),
+      new React.DOM.button({
+        type: 'submit',
+        className: 'btn btn-default'
+      }, 'Submit')
+    ]);
   },
 
   _onSubmit(e) {

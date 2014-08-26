@@ -24,12 +24,17 @@ THE SOFTWARE.
 
 import React from 'react';
 import { ViewController } from 'flvx';
-import { DecryptView } from 'views/DecryptView';
+import { DecryptExistingView } from 'views/decrypt/DecryptExistingView';
+import { DecryptNewView } from 'views/decrypt/DecryptNewView';
 
 export class DecryptViewController extends ViewController {
   render(data) {
-    if (!data.loading) {
-      React.renderComponent(new DecryptView(data), document.getElementById('content'));
+    if (data.type == 'existing') {
+      React.renderComponent(new DecryptExistingView(data), document.getElementById('content'));
+    } else if (data.type == 'new') {
+      React.renderComponent(new DecryptNewView(data), document.getElementById('content'));
+    } else {
+      React.renderComponent(new React.DOM.div(null, null), document.getElementById('content'));
     }
   }
 }

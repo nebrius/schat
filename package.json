@@ -20,6 +20,7 @@
     "body-parser": "^1.6.5",
     "commander": "^2.3.0",
     "express": "4.7.x",
+    "mongodb": "^1.4.8",
     "prompt": "^0.2.13",
     "transport-logger": "0.1.x",
     "user-management": "^1.0.2"
