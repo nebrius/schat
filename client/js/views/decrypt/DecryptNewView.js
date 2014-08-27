@@ -26,10 +26,17 @@ import React from 'react';
 import { dispatcher } from 'flvx';
 import { events } from 'events';
 
-export let DecryptNewView = React.createClass({
+export var DecryptNewView = React.createClass({
   render() {
     return new React.DOM.form({
-      onSubmit: this._onSubmit
+      onSubmit: (e) => {
+        e.preventDefault();
+        dispatcher.trigger({
+          type: events.DECRYPTION_PASSWORD_PAIR_SUBMITTED,
+          password1: document.getElementById('password1').value,
+          password2: document.getElementById('password2').value
+        });
+      }
     }, [
       this.props.error ? new React.DOM.div({ className: 'alert alert-danger' }, this.props.error) : null,
       new React.DOM.div({
@@ -58,14 +65,5 @@ export let DecryptNewView = React.createClass({
         className: 'btn btn-default'
       }, 'Submit')
     ]);
-  },
-
-  _onSubmit(e) {
-    e.preventDefault();
-    dispatcher.trigger({
-      type: events.DECRYPTION_PASSWORD_PAIR_SUBMITTED,
-      password1: document.getElementById('password1').value,
-      password2: document.getElementById('password2').value
-    });
   }
 });

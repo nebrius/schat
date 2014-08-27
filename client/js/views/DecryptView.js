@@ -23,13 +23,11 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { dispatcher } from 'flvx';
-import { events } from 'events';
 import { DecryptExistingView } from 'views/decrypt/DecryptExistingView';
 import { DecryptNewView } from 'views/decrypt/DecryptNewView';
 
 
-export let DecryptView = React.createClass({
+export var DecryptView = React.createClass({
   render() {
     if (this.props.type == 'existing') {
       return new DecryptExistingView(this.props);
@@ -38,13 +36,5 @@ export let DecryptView = React.createClass({
     } else {
       return new React.DOM.div(null, null);
     }
-  },
-
-  _onSubmit(e) {
-    e.preventDefault();
-    dispatcher.trigger({
-      type: events.DECRYPTION_PASSWORD_SUBMITTED,
-      password: document.getElementById('password').value
-    });
   }
 });

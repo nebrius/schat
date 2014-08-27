@@ -192,7 +192,6 @@ module.exports = function run(options) {
             limit: count,
             skip: start
           }, function(err, items) {
-            debugger;
           });
         }
       });
@@ -205,7 +204,6 @@ module.exports = function run(options) {
         } else if (!valid) {
           response.status(401).send('unauthorized');
         } else {
-
         }
       });
     });

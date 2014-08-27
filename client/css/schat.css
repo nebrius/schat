@@ -22,19 +22,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import React from 'react';
-import { HeaderView } from 'views/chat/HeaderView';
-import { MessageCreationView } from 'views/chat/MessageCreationView';
-import { MessageHistoryView } from 'views/chat/MessageHistoryView';
+.chat_view {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  top: 5px;
+  bottom: 5px;
+}
 
-export var ChatView = React.createClass({
-  render() {
-    return new React.DOM.div({
-      className: 'chat_view'
-    }, [
-      new HeaderView(),
-      new MessageHistoryView(this.props.messages),
-      new MessageCreationView()
-    ]);
-  }
-});
+.header_view {
+  -webkit-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+
+.header_view > button {
+  float: right;
+}
+
+.message_creation_view {
+  -webkit-flex: 0 1 auto;
+  flex: 0 1 auto;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+}
+
+.message_creation_view > label {
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+}
+
+.message_creation_view > button {
+  -webkit-flex: 0 1 auto;
+  flex: 0 1 auto;
+  width: 75px;
+  margin-left: 5px;
+}
+
+.message_history_view {
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+}

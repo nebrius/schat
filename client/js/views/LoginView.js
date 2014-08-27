@@ -26,10 +26,17 @@ import React from 'react';
 import { dispatcher } from 'flvx';
 import { events } from 'events';
 
-export let LoginView = React.createClass({
+export var LoginView = React.createClass({
   render() {
     return new React.DOM.form({
-      onSubmit: this._onSubmit
+      onSubmit: (e) => {
+        e.preventDefault();
+        dispatcher.trigger({
+          type: events.LOGIN_SUBMITTED,
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value
+        });
+      }
     }, [
       this.props.error ? new React.DOM.div({ className: 'alert alert-danger' }, this.props.error) : null,
       new React.DOM.div({
@@ -59,14 +66,5 @@ export let LoginView = React.createClass({
         className: 'btn btn-default'
       }, 'Submit')
     ]);
-  },
-
-  _onSubmit(e) {
-    e.preventDefault();
-    dispatcher.trigger({
-      type: events.LOGIN_SUBMITTED,
-      username: document.getElementById('username').value,
-      password: document.getElementById('password').value
-    });
   }
 });

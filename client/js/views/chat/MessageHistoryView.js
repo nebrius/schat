@@ -24,8 +24,10 @@ THE SOFTWARE.
 
 import React from 'react';
 
-export let MessageHistoryView = React.createClass({
+export var MessageHistoryView = React.createClass({
   render() {
-    return new React.DOM.div(null, 'History');
+    return new React.DOM.div({
+      className: 'message_history_view'
+    }, 'History');
   }
 });
