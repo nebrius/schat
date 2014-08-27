@@ -37,7 +37,7 @@ export let DecryptNewView = React.createClass({
       }, [
         new React.DOM.label(null, 'Decryption Password'),
         new React.DOM.input({
-          type: 'password1',
+          type: 'password',
           className: 'form-control',
           id: 'password1',
           placeholder: 'Enter password'
@@ -47,7 +47,7 @@ export let DecryptNewView = React.createClass({
         className: 'form-group'
       }, [
         new React.DOM.input({
-          type: 'password2',
+          type: 'password',
           className: 'form-control',
           id: 'password2',
           placeholder: 'Re-enter password'

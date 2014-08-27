@@ -31,15 +31,36 @@ let error = Symbol();
 let type = Symbol();
 let test = Symbol();
 
+const SALT_LENGTH = 128 / 8;
+const HASH_LENGTH = 512 / 32;
+const ITERATIONS = 25;
+const TEST_MESSAGE = 'No one would have believed in the last years of the nineteenth century that this world was being' +
+  ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
+  ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
+  ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.';
+
 export class DecryptStoreController extends StoreController {
 
   trigger(event) {
     switch(event.type) {
       case events.DECRYPTION_PASSWORD_SUBMITTED:
-        router.route('chat', {
-          token: this[token],
-          password: event.password
-        });
+        let salt = this[test].salt;
+        let message = this[test].message;
+        let hash = CryptoJS.PBKDF2(event.password, salt, {
+            keySize: HASH_LENGTH,
+            iterations: ITERATIONS
+          }).toString();
+        message = message.replace(/ /g, '+');
+        let decrypted = CryptoJS.enc.Latin1.stringify(CryptoJS.AES.decrypt(message, hash));
+        if (decrypted === TEST_MESSAGE) {
+          router.route('chat', {
+            token: this[token],
+            password: event.password
+          });
+        } else {
+          this[error] = 'Invalid decryption password';
+          aggregator.update();
+        }
         break;
       case events.DECRYPTION_PASSWORD_PAIR_SUBMITTED:
         if (event.password1 !== event.password2) {
@@ -49,7 +70,32 @@ export class DecryptStoreController extends StoreController {
           this[error] = 'Passwords must not be empty';
           aggregator.update();
         } else {
-
+          let salt = CryptoJS.lib.WordArray.random(SALT_LENGTH).toString();
+          let hash = CryptoJS.PBKDF2(event.password1, salt, {
+            keySize: HASH_LENGTH,
+            iterations: ITERATIONS
+          }).toString();
+          let encrypted = CryptoJS.AES.encrypt(TEST_MESSAGE, hash);
+          console.log(encrypted.toString());
+          api({
+            method: 'post',
+            endpoint: 'test',
+            content: {
+              salt: salt,
+              message: encrypted,
+              token: this[token]
+            }
+          }, (status) => {
+            if (status != 200) {
+              this[error] = 'Internal server error';
+              aggregator.update();
+            } else {
+              router.route('chat', {
+                token: this[token],
+                password: event.password1
+              });
+            }
+          });
         }
         break;
     }
@@ -73,9 +119,15 @@ export class DecryptStoreController extends StoreController {
     }, (status, response) => {
       if (status == 404) {
         this[type] = 'new';
+      } else if (status == 200) {
+        try {
+          this[test] = JSON.parse(response);
+          this[type] = 'existing';
+        } catch(e) {
+          this[error] = 'Internal server error';
+        }
       } else {
-        this[type] = 'existing';
-        this[test] = response;
+        this[error] = 'Internal server error';
       }
       aggregator.update();
     });

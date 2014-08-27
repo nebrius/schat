@@ -146,10 +146,13 @@ module.exports = function run(options) {
                 logger.error('Error getting the test item: ' + err);
                 return;
               }
-              if (item === null) {
+              if (!item) {
                 response.status(404).send('');
               } else {
-                response.status(200).send(item.message);
+                response.status(200).send(JSON.stringify({
+                  salt: item.salt,
+                  message: item.message
+                }));
               }
             });
           });
@@ -158,14 +161,40 @@ module.exports = function run(options) {
     });
 
     app.post('/api/test', function(request, response) {
-      users.isTokenValid(decodeToken(request.query.token), function(err, valid) {
+      var salt = request.body.salt;
+      var message = request.body.message;
+      users.isTokenValid(decodeToken(request.body.token), function(err, valid) {
         if (err) {
           response.status(500).send('internal error');
           logger.error('Error validating token: ' + err);
         } else if (!valid) {
           response.status(401).send('unauthorized');
         } else {
-
+          database.collection('test', function(err, col) {
+            if (err) {
+              response.status(500).send('Internal error');
+              logger.error('Error getting the test collection: ' + err);
+              return;
+            }
+            col.findOne({}, function(err, item) {
+              if (item) {
+                response.status(400).send('Bad request');
+                logger.warning('Client attempted to overwrite existing test message');
+                return;
+              }
+              col.insert({
+                salt: salt,
+                message: message
+              }, { w: 1 }, function(err) {
+                if (err) {
+                  response.status(500).send('Internal error');
+                  logger.error('Error inserting the test message: ' + err);
+                  return;
+                }
+                response.status(200).send('ok');
+              });
+            });
+          });
         }
       });
     });
