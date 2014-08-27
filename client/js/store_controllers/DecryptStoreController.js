@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 
 import { StoreController, aggregator, router } from 'flvx';
-import { api } from 'util/api';
+import { api, encrypt, decrypt } from 'util';
 import { events } from 'events';
 
 let token = Symbol();
@@ -31,9 +31,6 @@ let error = Symbol();
 let type = Symbol();
 let test = Symbol();
 
-const SALT_LENGTH = 128 / 8;
-const HASH_LENGTH = 512 / 32;
-const ITERATIONS = 25;
 const TEST_MESSAGE = 'No one would have believed in the last years of the nineteenth century that this world was being' +
   ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
   ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
@@ -44,14 +41,7 @@ export class DecryptStoreController extends StoreController {
   trigger(event) {
     switch(event.type) {
       case events.DECRYPTION_PASSWORD_SUBMITTED:
-        let salt = this[test].salt;
-        let message = this[test].message;
-        let hash = CryptoJS.PBKDF2(event.password, salt, {
-            keySize: HASH_LENGTH,
-            iterations: ITERATIONS
-          }).toString();
-        message = message.replace(/ /g, '+');
-        let decrypted = CryptoJS.enc.Latin1.stringify(CryptoJS.AES.decrypt(message, hash));
+        let decrypted = decrypt(this[test].message, event.password, this[test].salt);
         if (decrypted === TEST_MESSAGE) {
           router.route('chat', {
             token: this[token],
@@ -70,19 +60,13 @@ export class DecryptStoreController extends StoreController {
           this[error] = 'Passwords must not be empty';
           aggregator.update();
         } else {
-          let salt = CryptoJS.lib.WordArray.random(SALT_LENGTH).toString();
-          let hash = CryptoJS.PBKDF2(event.password1, salt, {
-            keySize: HASH_LENGTH,
-            iterations: ITERATIONS
-          }).toString();
-          let encrypted = CryptoJS.AES.encrypt(TEST_MESSAGE, hash);
-          console.log(encrypted.toString());
+          let encrypted = encrypt(TEST_MESSAGE, event.password1);
           api({
             method: 'post',
             endpoint: 'test',
             content: {
-              salt: salt,
-              message: encrypted,
+              salt: encrypted.salt,
+              message: encrypted.message,
               token: this[token]
             }
           }, (status) => {

@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 import { StoreController, aggregator, router } from 'flvx';
 import { events } from 'events';
-import { api } from 'util/api';
+import { api } from 'util';
 
 let error = Symbol();
 

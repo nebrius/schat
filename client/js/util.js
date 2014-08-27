@@ -22,6 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+const SALT_LENGTH = 128 / 8;
+const HASH_LENGTH = 512 / 32;
+const ITERATIONS = 25;
+
+export function encrypt(message, password) {
+  let salt = CryptoJS.lib.WordArray.random(SALT_LENGTH).toString();
+  let hash = CryptoJS.PBKDF2(password, salt, {
+    keySize: HASH_LENGTH,
+    iterations: ITERATIONS
+  }).toString();
+  let encrypted = CryptoJS.AES.encrypt(message, hash).toString();
+  return {
+    salt: salt,
+    message: encrypted
+  };
+}
+
+export function decrypt(message, password, salt) {
+  let hash = CryptoJS.PBKDF2(password, salt, {
+      keySize: HASH_LENGTH,
+      iterations: ITERATIONS
+    }).toString();
+  message = message.replace(/\s/g, '+');
+  return CryptoJS.enc.Latin1.stringify(CryptoJS.AES.decrypt(message, hash));
+}
+
 export function api(config, cb) {
   let xhr = new XMLHttpRequest();
   let data = [];

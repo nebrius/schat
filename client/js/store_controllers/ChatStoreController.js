@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 
 import { StoreController, aggregator } from 'flvx';
-import { api } from 'util/api';
+import { api } from 'util';
 
 let token = Symbol();
 let password = Symbol();
