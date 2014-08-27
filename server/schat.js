@@ -104,28 +104,6 @@ module.exports = function run(options) {
       });
     });
 
-    app.get('/api/messages', function(request, response) {
-      var start = parseInt(request.query.start);
-      var count = parseInt(request.query.count);
-      var password = request.query.password;
-      users.isTokenValid(decodeToken(request.query.token), function(err, valid) {
-        if (err) {
-          response.status(500).send('internal error');
-          logger.error('Error validating token: ' + err);
-        } else if (!valid) {
-          response.status(401).send('unauthorized');
-        } else {
-          collection.find(null, {
-            limit: count,
-            skip: start
-          }, function(err, items) {
-            debugger;
-            var cipher = crypto.createCipher('aes-256-cbc', password);
-          });
-        }
-      });
-    });
-
     app.get('/api/test', function(request, response) {
       users.isTokenValid(decodeToken(request.query.token), function(err, valid) {
         if (err) {
@@ -199,10 +177,28 @@ module.exports = function run(options) {
       });
     });
 
+    app.get('/api/messages', function(request, response) {
+      var start = parseInt(request.query.start);
+      var count = parseInt(request.query.count);
+      var password = request.query.password;
+      users.isTokenValid(decodeToken(request.query.token), function(err, valid) {
+        if (err) {
+          response.status(500).send('internal error');
+          logger.error('Error validating token: ' + err);
+        } else if (!valid) {
+          response.status(401).send('unauthorized');
+        } else {
+          collection.find(null, {
+            limit: count,
+            skip: start
+          }, function(err, items) {
+            debugger;
+          });
+        }
+      });
+    });
+
     app.post('/api/message', function(request, response) {
-      var cipher = request.cipher;
-      var token = request.token;
-      debugger;
       users.isTokenValid(decodeToken(request.token), function(err, valid) {
         if (err) {
           response.status(500).send('internal error');

@@ -32,9 +32,9 @@ import { DecryptNewView } from 'views/decrypt/DecryptNewView';
 export let DecryptView = React.createClass({
   render() {
     if (this.props.type == 'existing') {
-      return DecryptExistingView(this.props);
+      return new DecryptExistingView(this.props);
     } else if (this.props.type == 'new') {
-      return DecryptNewView(this.props);
+      return new DecryptNewView(this.props);
     } else {
       return new React.DOM.div(null, null);
     }

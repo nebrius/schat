@@ -31,7 +31,7 @@ export let DecryptNewView = React.createClass({
     return new React.DOM.form({
       onSubmit: this._onSubmit
     }, [
-      this.props.error ? React.DOM.div({ className: 'alert alert-danger' }, this.props.error) : null,
+      this.props.error ? new React.DOM.div({ className: 'alert alert-danger' }, this.props.error) : null,
       new React.DOM.div({
         className: 'form-group'
       }, [

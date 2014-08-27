@@ -23,16 +23,9 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { HeaderView } from 'views/chat/HeaderView';
-import { MessageCreationView } from 'views/chat/MessageCreationView';
-import { MessageHistoryView } from 'views/chat/MessageHistoryView';
 
-export let ChatView = React.createClass({
+export let HeaderView = React.createClass({
   render() {
-    return new React.DOM.div(null, [
-      new HeaderView(),
-      new MessageCreationView(),
-      new MessageHistoryView(this.props.messages)
-    ]);
+    return new React.DOM.div(null, 'Header');
   }
 });
