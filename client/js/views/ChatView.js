@@ -33,7 +33,7 @@ export var ChatView = React.createClass({
       className: 'chat_view'
     }, [
       new HeaderView(),
-      new MessageHistoryView(this.props.messages),
+      new MessageHistoryView(this.props),
       new MessageCreationView()
     ]);
   }

@@ -22,19 +22,71 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregator } from 'flvx';
+import { StoreController, aggregator, router } from 'flvx';
 import { api } from 'util';
+import { events } from 'events';
 
 let token = Symbol();
 let password = Symbol();
 
+const MINUTES_IN_MILLIS = 1000 * 60;
+
 export class ChatStoreController extends StoreController {
 
   trigger(event) {
+    switch(event.type) {
+      case events.LOGOUT_REQUESTED:
+        api({
+          method: 'post',
+          endpoint: 'logout',
+          content: {
+            token: this[token]
+          }
+        }, (status, response) => {
+          router.route('login', {
+            token: this[token],
+            password: event.password
+          });
+        });
+        break;
+    }
   }
 
   render() {
-    return {};
+    return {
+      messages: [{
+        time: Date.now() - MINUTES_IN_MILLIS,
+        isUser: false,
+        name: 'Bob',
+        message: 'you?'
+      }, {
+        time: Date.now() - MINUTES_IN_MILLIS * 2,
+        isUser: false,
+        name: 'Bob',
+        message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
+          ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
+          ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
+          ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
+      }, {
+        time: Date.now() - MINUTES_IN_MILLIS * 5,
+        isUser: true,
+        name: 'Alice',
+        message: 'how are you?'
+      }, {
+        time: Date.now() - MINUTES_IN_MILLIS * 8,
+        isUser: false,
+        name: 'Bob',
+        message: 'hello'
+      }, {
+        time: Date.now() - MINUTES_IN_MILLIS * 10,
+        isUser: true,
+        name: 'Alice',
+        message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
+          ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
+          ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
+          ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
+      }]
+    };
   }
 
   onConnected(data) {

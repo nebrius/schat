@@ -23,11 +23,16 @@ THE SOFTWARE.
 */
 
 import React from 'react';
+import { MessageView } from 'views/chat/MessageView';
 
 export var MessageHistoryView = React.createClass({
   render() {
     return new React.DOM.div({
       className: 'message_history_view'
-    }, 'History');
+    }, [
+      new React.DOM.div({
+        className: 'message_history_view_container'
+      }, this.props.messages.map((message) => new MessageView(message)))
+    ]);
   }
 });

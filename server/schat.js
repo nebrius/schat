@@ -104,6 +104,26 @@ module.exports = function run(options) {
       });
     });
 
+    app.post('/api/logout', function(request, response) {
+      users.isTokenValid(decodeToken(request.body.token), function(err, valid) {
+        if (err) {
+          response.status(500).send('internal error');
+          logger.error('Error validating token: ' + err);
+        } else if (!valid) {
+          response.status(401).send('unauthorized');
+        } else {
+          users.expireToken(request.body.token, function(err) {
+            if (err) {
+              response.status(500).send('internal error');
+              logger.error('Error validating token: ' + err);
+            } else {
+              response.status(200).send('ok');
+            }
+          });
+        }
+      });
+    });
+
     app.get('/api/test', function(request, response) {
       users.isTokenValid(decodeToken(request.query.token), function(err, valid) {
         if (err) {
