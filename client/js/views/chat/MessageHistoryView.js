@@ -28,11 +28,18 @@ import { MessageView } from 'views/chat/MessageView';
 export var MessageHistoryView = React.createClass({
   render() {
     return new React.DOM.div({
-      className: 'message_history_view'
+      className: 'message_history_view',
+      scrollTop: Number.MAX_SAFE_INTEGER
     }, [
       new React.DOM.div({
         className: 'message_history_view_container'
       }, this.props.messages.map((message) => new MessageView(message)))
     ]);
+  },
+  componentDidMount() {
+    if (this.props.lockedToBottom) {
+      let parent = this.getDOMNode();
+      parent.scrollTop = parseInt(window.getComputedStyle(parent.children[0]).height);
+    }
   }
 });

@@ -22,51 +22,71 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregator, router } from 'flvx';
-import { MessagesStore } from 'stores/MessagesStore';
-import { api } from 'util';
+import { StoreController, aggregator } from 'flvx';
 import { events } from 'events';
+import io from 'socketio';
 
 let token = Symbol();
+let password = Symbol();
+let username = Symbol();
 let messages = Symbol();
+let socket = Symbol();
+let userConnected = Symbol();
 
-export class ChatStoreController extends StoreController {
+const MESSAGE_WINDOW_SIZE = 100;
+
+export class MessagesStore extends StoreController {
 
   trigger(event) {
     switch(event.type) {
-      case events.LOGOUT_REQUESTED:
-        api({
-          method: 'post',
-          endpoint: 'logout',
-          content: {
-            token: this[token]
-          }
-        }, () => {
-          router.route('login', {
-            token: this[token]
-          });
+      case events.MESSAGE_SUBMITTED:
+        this[socket].emit('sendMessage', {
+          token: this[token]
         });
         break;
-      default:
-        this[messages].trigger(event);
     }
   }
 
   render() {
     return {
-      lockedToBottom: false,
-      messages: this[messages].render().messages
+      messages: this[messages],
+      userConnected: this[userConnected]
     };
   }
 
   onConnected(data) {
     this[token] = data.token;
-    (this[messages] = new MessagesStore()).onConnected({
-      token: data.token,
-      username: data.username,
-      password: data.password
-    });
-    aggregator.update();
-  }
+    this[username] = data.username;
+    this[password] = data.password;
+    this[messages] = [];
 
+    this[socket] = io(window.location.host);
+    this[socket].emit('getMessages', {
+      token: this[token],
+      start: 0,
+      count: MESSAGE_WINDOW_SIZE
+    });
+    this[socket].on('messages', (msg) => {
+      this[messages] = msg;
+      aggregator.update();
+    });
+    this[socket].on('newMessage', (msg) => {
+      this[messages].shift(msg);
+      if (this[messages].length > MESSAGE_WINDOW_SIZE) {
+        this[messages].pop();
+      }
+      aggregator.update();
+    });
+    this[socket].on('userConnected', () => {
+      this[userConnected] = true;
+      aggregator.update();
+    });
+    this[socket].on('userDisconnected', () => {
+      this[userConnected] = false;
+      aggregator.update();
+    });
+    this[socket].on('err', (msg) => {
+      debugger;
+    });
+  }
 }

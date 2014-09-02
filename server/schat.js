@@ -23,12 +23,13 @@ THE SOFTWARE.
 */
 
 var path = require('path');
-var crypto = require('crypto');
 var MongoClient = require('mongodb').MongoClient;
 var Logger = require('transport-logger');
 var UserManagement = require('user-management');
 var express = require('express');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
+var socketio = require('socket.io');
+var http = require('http');
 
 module.exports = function run(options) {
 
@@ -82,13 +83,16 @@ module.exports = function run(options) {
     var app = express();
     app.use('/', express.static(path.join(__dirname, '..', 'client-dist')));
     app.use(bodyParser.urlencoded({ extended: false }));
+    var server = http.Server(app);
+    var io = socketio(server);
 
     // The various URI encoding/decoding that goes on with tokens results in a slight mangling of the token
     function decodeToken(token) {
       return decodeURIComponent(token).replace(/\s/g, '+');
     }
 
-    // Auth endpoint
+    // HTTP API methods, non-message related
+
     app.post('/api/auth', function(request, response) {
       var username = request.body.username;
       var password = request.body.password;
@@ -197,40 +201,64 @@ module.exports = function run(options) {
       });
     });
 
-    app.get('/api/messages', function(request, response) {
-      var start = parseInt(request.query.start);
-      var count = parseInt(request.query.count);
-      var password = request.query.password;
-      users.isTokenValid(decodeToken(request.query.token), function(err, valid) {
-        if (err) {
-          response.status(500).send('internal error');
-          logger.error('Error validating token: ' + err);
-        } else if (!valid) {
-          response.status(401).send('unauthorized');
-        } else {
-          collection.find(null, {
-            limit: count,
-            skip: start
-          }, function(err, items) {
-          });
-        }
+    // Socket.io messaging methods
+    io.on('connection', function(socket) {
+      socket.on('disconnect', function(msg) {
+        debugger;
       });
-    });
-
-    app.post('/api/message', function(request, response) {
-      users.isTokenValid(decodeToken(request.token), function(err, valid) {
-        if (err) {
-          response.status(500).send('internal error');
-        } else if (!valid) {
-          response.status(401).send('unauthorized');
-        } else {
-        }
+      socket.on('sendMessage', function(msg) {
+        debugger;
+      });
+      socket.on('getMessages', function(msg) {
+        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
+          if (err) {
+            socket.emit('internal error');
+            logger.error('err', 'Error validating token: ' + err);
+          } else if (!valid) {
+            socket.emit('err', 'unauthorized');
+          } else {
+            var MINUTES_IN_MILLIS = 1000 * 60;
+            socket.emit('messages', [{
+              time: Date.now() - MINUTES_IN_MILLIS,
+              isUser: false,
+              name: 'Bob',
+              message: 'you?'
+            }, {
+              time: Date.now() - MINUTES_IN_MILLIS * 2,
+              isUser: false,
+              name: 'Bob',
+              message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
+                ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
+                ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
+                ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
+            }, {
+              time: Date.now() - MINUTES_IN_MILLIS * 5,
+              isUser: true,
+              name: 'Alice',
+              message: 'how are you?'
+            }, {
+              time: Date.now() - MINUTES_IN_MILLIS * 8,
+              isUser: false,
+              name: 'Bob',
+              message: 'hello'
+            }, {
+              time: Date.now() - MINUTES_IN_MILLIS * 10,
+              isUser: true,
+              name: 'Alice',
+              message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
+                ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
+                ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
+                ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
+            }]);
+          }
+        });
       });
     });
 
     // Start the server
-    app.listen(options.port, '127.0.0.1');
-    logger.info('Server listening on port ' + options.port);
+    server.listen(options.port, '127.0.0.1', function() {
+      logger.info('Server listening on port ' + options.port);
+    });
   }
 
 };
