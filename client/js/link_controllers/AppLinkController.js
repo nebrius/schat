@@ -22,24 +22,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import React from 'react';
-import { dispatch } from 'flvx';
+import { LinkController, dispatch, route } from 'flvx';
 import { actions } from 'actions';
+import { api } from 'util';
+import io from 'socketio';
 
-export var HeaderView = React.createClass({
-  render() {
-    return React.DOM.div({
-      className: 'header_view'
-    }, [
-      React.DOM.button({
-        className: 'btn btn-default dropdown-toggle',
-        type: 'button',
-        onClick: () => {
-          dispatch({
-            type: actions.LOGOUT_REQUESTED
-          });
-        }
-      }, 'Logout')
-    ]);
+let socket = Symbol();
+
+export class AppLinkController extends LinkController {
+  dispatch(action) {
+    /*switch(action.type) {
+      case actions.LOGIN_SUBMITTED:
+        api({
+          method: 'post',
+          endpoint: 'auth',
+          content: {
+            username: action.username,
+            password: action.password
+          }
+        }, (status, response) => {
+          switch(status) {
+            case 401:
+              this[error] = 'Invalid username or password';
+              aggregate();
+              break;
+            case 200:
+              route('decrypt', {
+                token: response
+              });
+              break;
+            default:
+              this[error] = 'Server Error';
+              aggregate();
+              break;
+          }
+        });
+        break;
+    }*/
   }
-});
+  onConnected() {
+    if (this[socket]) {
+      return;
+    }
+    console.log('Connecting to server');
+    this[socket] = io();
+  }
+}

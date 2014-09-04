@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 import React from 'react';
 import { dispatch } from 'flvx';
-import { events } from 'events';
+import { actions } from 'actions';
 
 export var MessageCreationView = React.createClass({
   render() {
@@ -33,7 +33,7 @@ export var MessageCreationView = React.createClass({
       onSubmit: (e) => {
         e.preventDefault();
         dispatch({
-          type: events.MESSAGE_SUBMITTED,
+          type: actions.MESSAGE_SUBMITTED,
           message: document.getElementById('message').value
         });
       }

@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 
 import { StoreController, aggregate, route } from 'flvx';
-import { events } from 'events';
+import { actions } from 'actions';
 import { api } from 'util';
 
 let error = Symbol();
@@ -32,7 +32,7 @@ export class LoginStoreController extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case events.LOGIN_SUBMITTED:
+      case actions.LOGIN_SUBMITTED:
         api({
           method: 'post',
           endpoint: 'auth',

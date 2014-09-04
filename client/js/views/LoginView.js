@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 import React from 'react';
 import { dispatch } from 'flvx';
-import { events } from 'events';
+import { actions } from 'actions';
 
 export var LoginView = React.createClass({
   render() {
@@ -32,7 +32,7 @@ export var LoginView = React.createClass({
       onSubmit: (e) => {
         e.preventDefault();
         dispatch({
-          type: events.LOGIN_SUBMITTED,
+          type: actions.LOGIN_SUBMITTED,
           username: document.getElementById('username').value,
           password: document.getElementById('password').value
         });

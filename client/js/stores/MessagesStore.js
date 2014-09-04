@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 
 import { StoreController, aggregate } from 'flvx';
-import { events } from 'events';
+import { actions } from 'actions';
 import io from 'socketio';
 
 let token = Symbol();
@@ -39,7 +39,7 @@ export class MessagesStore extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case events.MESSAGE_SUBMITTED:
+      case actions.MESSAGE_SUBMITTED:
         this[socket].emit('sendMessage', {
           token: this[token]
         });

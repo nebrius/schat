@@ -25,7 +25,7 @@ THE SOFTWARE.
 import { StoreController, aggregate, route } from 'flvx';
 import { MessagesStore } from 'stores/MessagesStore';
 import { api } from 'util';
-import { events } from 'events';
+import { actions } from 'actions';
 
 let token = Symbol();
 let messages = Symbol();
@@ -34,7 +34,7 @@ export class ChatStoreController extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case events.LOGOUT_REQUESTED:
+      case actions.LOGOUT_REQUESTED:
         api({
           method: 'post',
           endpoint: 'logout',

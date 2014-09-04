@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 import { StoreController, aggregate, route } from 'flvx';
 import { api, encrypt, decrypt } from 'util';
-import { events } from 'events';
+import { actions } from 'actions';
 
 let token = Symbol();
 let error = Symbol();
@@ -40,7 +40,7 @@ export class DecryptStoreController extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case events.DECRYPTION_PASSWORD_SUBMITTED:
+      case actions.DECRYPTION_PASSWORD_SUBMITTED:
         let decrypted = decrypt(this[test].message, action.password, this[test].salt);
         if (decrypted === TEST_MESSAGE) {
           route('chat', {
@@ -52,7 +52,7 @@ export class DecryptStoreController extends StoreController {
           aggregate();
         }
         break;
-      case events.DECRYPTION_PASSWORD_PAIR_SUBMITTED:
+      case actions.DECRYPTION_PASSWORD_PAIR_SUBMITTED:
         if (action.password1 !== action.password2) {
           this[error] = 'Passwords do not match';
           aggregate();

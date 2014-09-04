@@ -23,6 +23,7 @@ THE SOFTWARE.
 */
 
 import { registerRoute, route } from 'flvx';
+import { AppLinkController } from 'link_controllers/AppLinkController';
 import { LoginStoreController } from 'store_controllers/LoginStoreController';
 import { LoginViewController } from 'view_controllers/LoginViewController';
 import { DecryptStoreController } from 'store_controllers/DecryptStoreController';
@@ -30,19 +31,24 @@ import { DecryptViewController } from 'view_controllers/DecryptViewController';
 import { ChatStoreController } from 'store_controllers/ChatStoreController';
 import { ChatViewController } from 'view_controllers/ChatViewController';
 
+let appLinkController = new AppLinkController();
+
 registerRoute('login', {
   storeController: new LoginStoreController(),
-  viewController: new LoginViewController()
+  viewController: new LoginViewController(),
+  linkController: appLinkController
 });
 
 registerRoute('decrypt', {
   storeController: new DecryptStoreController(),
-  viewController: new DecryptViewController()
+  viewController: new DecryptViewController(),
+  linkController: appLinkController
 });
 
 registerRoute('chat', {
   storeController: new ChatStoreController(),
-  viewController: new ChatViewController()
+  viewController: new ChatViewController(),
+  linkController: appLinkController
 });
 
 route('login');

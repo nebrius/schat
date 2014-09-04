@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 import React from 'react';
 import { dispatch } from 'flvx';
-import { events } from 'events';
+import { actions } from 'actions';
 
 export var DecryptNewView = React.createClass({
   render() {
@@ -32,7 +32,7 @@ export var DecryptNewView = React.createClass({
       onSubmit: (e) => {
         e.preventDefault();
         dispatch({
-          type: events.DECRYPTION_PASSWORD_PAIR_SUBMITTED,
+          type: actions.DECRYPTION_PASSWORD_PAIR_SUBMITTED,
           password1: document.getElementById('password1').value,
           password2: document.getElementById('password2').value
         });
