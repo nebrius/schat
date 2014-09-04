@@ -29,7 +29,7 @@ import { MessageHistoryView } from 'views/chat/MessageHistoryView';
 
 export var ChatView = React.createClass({
   render() {
-    return new React.DOM.div({
+    return React.DOM.div({
       className: 'chat_view'
     }, [
       new HeaderView(),

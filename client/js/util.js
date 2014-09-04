@@ -71,3 +71,27 @@ export function api(config, cb) {
     throw new Error('Unsupported API method "' + config.method + '"');
   }
 }
+export function formatTime(timestamp) {
+  let now = new Date();
+  let time = new Date(timestamp);
+  if (now.getDate() == time.getDate() && now.getMonth() == time.getMonth() && now.getFullYear() == time.getFullYear()) {
+    let hours = time.getHours();
+    let minutes = time.getMinutes();
+    if (minutes < 10) {
+      minutes = '0' + minutes;
+    }
+    if (hours === 0) {
+      return '12:' + minutes + ' AM';
+    } else if (hours < 12) {
+      return hours + ':' + minutes + ' AM';
+    } else if (hours == 12) {
+      return '12:' + minutes + ' PM';
+    } else {
+      return (hours - 12) + ':' + minutes + ' PM';
+    }
+  } else if (now.getFullYear() == time.getFullYear()) {
+    return (time.getMonth() + 1) + '/' + time.getDate();
+  } else {
+    return (time.getMonth() + 1) + '/' + time.getDate() + '/' + time.getFullYear();
+  }
+}

@@ -1,11 +1,9 @@
 define([], function() {
   "use strict";
-  var storeController = Symbol();
-  var viewController = Symbol();
   var StoreController = function StoreController() {};
   ($traceurRuntime.createClass)(StoreController, {
-    trigger: function() {
-      throw new Error('"trigger" must be implemented by a derived store controller');
+    dispatch: function() {
+      throw new Error('"dispatch" must be implemented by a derived store controller');
     },
     render: function() {
       throw new Error('"render" must be implemented by a derived store controller');
@@ -15,8 +13,8 @@ define([], function() {
   }, {});
   var Store = function Store() {};
   ($traceurRuntime.createClass)(Store, {
-    trigger: function() {
-      throw new Error('"trigger" must be implemented by a derived store');
+    dispatch: function() {
+      throw new Error('"dispatch" must be implemented by a derived store');
     },
     render: function() {
       throw new Error('"render" must be implemented by a derived store');
@@ -32,47 +30,69 @@ define([], function() {
     onConnected: function() {},
     onDisconnected: function() {}
   }, {});
-  var Aggregator = function Aggregator() {};
-  ($traceurRuntime.createClass)(Aggregator, {update: function() {
-      this[$traceurRuntime.toProperty(viewController)].render(this[$traceurRuntime.toProperty(storeController)].render());
-    }}, {});
-  var aggregator = new Aggregator();
-  var Dispatcher = function Dispatcher() {};
-  ($traceurRuntime.createClass)(Dispatcher, {trigger: function(event) {
-      this[$traceurRuntime.toProperty(storeController)].trigger(event);
-    }}, {});
-  var dispatcher = new Dispatcher();
-  var routes = Symbol();
-  var Router = function Router() {
-    $traceurRuntime.setProperty(this, routes, {});
-  };
-  ($traceurRuntime.createClass)(Router, {
-    registerRoute: function(name, options) {
-      if (!(options.storeController instanceof StoreController)) {
-        throw new Error('Invalid store controller');
-      }
-      if (!(options.viewController instanceof ViewController)) {
-        throw new Error('Invalid view controller');
-      }
-      $traceurRuntime.setProperty(this[$traceurRuntime.toProperty(routes)], name, options);
+  var LinkController = function LinkController() {};
+  ($traceurRuntime.createClass)(LinkController, {
+    dispatch: function() {
+      throw new Error('"dispatch" must be implemented by a derived link controller');
     },
-    route: function(newRoute, data) {
-      var routeOptions = this[$traceurRuntime.toProperty(routes)][$traceurRuntime.toProperty(newRoute)];
-      if (!routeOptions) {
-        throw new Error('Unknown route "' + newRoute + '"');
-      }
-      if (aggregator[$traceurRuntime.toProperty(storeController)]) {
-        aggregator[$traceurRuntime.toProperty(storeController)].onDisconnected();
-        aggregator[$traceurRuntime.toProperty(viewController)].onDisconnected();
-      }
-      $traceurRuntime.setProperty(aggregator, storeController, routeOptions.storeController);
-      $traceurRuntime.setProperty(aggregator, viewController, routeOptions.viewController);
-      $traceurRuntime.setProperty(dispatcher, storeController, routeOptions.storeController);
-      routeOptions.viewController.onConnected();
-      routeOptions.storeController.onConnected(data || {});
-    }
+    onConnected: function() {},
+    onDisconnected: function() {}
   }, {});
-  var router = new Router();
+  var currentStoreController = null;
+  var currentViewController = null;
+  var currentLinkController = null;
+  var routes = {};
+  function aggregate() {
+    if (!currentViewController) {
+      throw new Error('"aggregate" called before first route');
+    }
+    currentViewController.render(currentStoreController.render());
+  }
+  function dispatch(action) {
+    if (!currentStoreController) {
+      throw new Error('"dispatch" called before first route');
+    }
+    if (currentLinkController) {
+      currentLinkController.dispatch(action);
+    }
+    currentStoreController.dispatch(action);
+  }
+  function registerRoute(name, options) {
+    if (!(options.storeController instanceof StoreController)) {
+      throw new Error('Invalid store controller');
+    }
+    if (!(options.viewController instanceof ViewController)) {
+      throw new Error('Invalid view controller');
+    }
+    if (options.linkController && !(options.linkController instanceof LinkController)) {
+      throw new Error('Invalid link controller');
+    }
+    $traceurRuntime.setProperty(routes, name, options);
+  }
+  function route(name, state) {
+    var nextRoute = routes[$traceurRuntime.toProperty(name)];
+    if (!nextRoute) {
+      throw new Error('Unknown route "' + route + '"');
+    }
+    state = state || {};
+    if (currentStoreController) {
+      currentStoreController.onDisconnected();
+    }
+    if (currentLinkController) {
+      currentLinkController.onDisconnected();
+    }
+    if (currentViewController) {
+      currentViewController.onDisconnected();
+    }
+    currentStoreController = nextRoute.storeController;
+    currentLinkController = nextRoute.linkController;
+    currentViewController = nextRoute.viewController;
+    currentStoreController.onConnected(state);
+    if (currentLinkController) {
+      currentLinkController.onConnected();
+    }
+    currentViewController.onConnected();
+  }
   return {
     get StoreController() {
       return StoreController;
@@ -83,14 +103,20 @@ define([], function() {
     get ViewController() {
       return ViewController;
     },
-    get aggregator() {
-      return aggregator;
+    get LinkController() {
+      return LinkController;
     },
-    get dispatcher() {
-      return dispatcher;
+    get aggregate() {
+      return aggregate;
     },
-    get router() {
-      return router;
+    get dispatch() {
+      return dispatch;
+    },
+    get registerRoute() {
+      return registerRoute;
+    },
+    get route() {
+      return route;
     },
     __esModule: true
   };

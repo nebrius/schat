@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { router } from 'flvx';
+import { registerRoute, route } from 'flvx';
 import { LoginStoreController } from 'store_controllers/LoginStoreController';
 import { LoginViewController } from 'view_controllers/LoginViewController';
 import { DecryptStoreController } from 'store_controllers/DecryptStoreController';
@@ -30,19 +30,19 @@ import { DecryptViewController } from 'view_controllers/DecryptViewController';
 import { ChatStoreController } from 'store_controllers/ChatStoreController';
 import { ChatViewController } from 'view_controllers/ChatViewController';
 
-router.registerRoute('login', {
+registerRoute('login', {
   storeController: new LoginStoreController(),
   viewController: new LoginViewController()
 });
 
-router.registerRoute('decrypt', {
+registerRoute('decrypt', {
   storeController: new DecryptStoreController(),
   viewController: new DecryptViewController()
 });
 
-router.registerRoute('chat', {
+registerRoute('chat', {
   storeController: new ChatStoreController(),
   viewController: new ChatViewController()
 });
 
-router.route('login');
+route('login');

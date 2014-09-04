@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregator, router } from 'flvx';
+import { StoreController, aggregate, route } from 'flvx';
 import { api, encrypt, decrypt } from 'util';
 import { events } from 'events';
 
@@ -38,29 +38,29 @@ const TEST_MESSAGE = 'No one would have believed in the last years of the ninete
 
 export class DecryptStoreController extends StoreController {
 
-  trigger(event) {
-    switch(event.type) {
+  dispatch(action) {
+    switch(action.type) {
       case events.DECRYPTION_PASSWORD_SUBMITTED:
-        let decrypted = decrypt(this[test].message, event.password, this[test].salt);
+        let decrypted = decrypt(this[test].message, action.password, this[test].salt);
         if (decrypted === TEST_MESSAGE) {
-          router.route('chat', {
+          route('chat', {
             token: this[token],
-            password: event.password
+            password: action.password
           });
         } else {
           this[error] = 'Invalid decryption password';
-          aggregator.update();
+          aggregate();
         }
         break;
       case events.DECRYPTION_PASSWORD_PAIR_SUBMITTED:
-        if (event.password1 !== event.password2) {
+        if (action.password1 !== action.password2) {
           this[error] = 'Passwords do not match';
-          aggregator.update();
-        } else if (!event.password1) {
+          aggregate();
+        } else if (!action.password1) {
           this[error] = 'Passwords must not be empty';
-          aggregator.update();
+          aggregate();
         } else {
-          let encrypted = encrypt(TEST_MESSAGE, event.password1);
+          let encrypted = encrypt(TEST_MESSAGE, action.password1);
           api({
             method: 'post',
             endpoint: 'test',
@@ -72,11 +72,11 @@ export class DecryptStoreController extends StoreController {
           }, (status) => {
             if (status != 200) {
               this[error] = 'Internal server error';
-              aggregator.update();
+              aggregate();
             } else {
-              router.route('chat', {
+              route('chat', {
                 token: this[token],
-                password: event.password1
+                password: action.password1
               });
             }
           });
@@ -113,8 +113,8 @@ export class DecryptStoreController extends StoreController {
       } else {
         this[error] = 'Internal server error';
       }
-      aggregator.update();
+      aggregate();
     });
-    aggregator.update();
+    aggregate();
   }
 }

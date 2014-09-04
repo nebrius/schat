@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregator } from 'flvx';
+import { StoreController, aggregate } from 'flvx';
 import { events } from 'events';
 import io from 'socketio';
 
@@ -37,8 +37,8 @@ const MESSAGE_WINDOW_SIZE = 100;
 
 export class MessagesStore extends StoreController {
 
-  trigger(event) {
-    switch(event.type) {
+  dispatch(action) {
+    switch(action.type) {
       case events.MESSAGE_SUBMITTED:
         this[socket].emit('sendMessage', {
           token: this[token]
@@ -68,22 +68,22 @@ export class MessagesStore extends StoreController {
     });
     this[socket].on('messages', (msg) => {
       this[messages] = msg;
-      aggregator.update();
+      aggregate();
     });
     this[socket].on('newMessage', (msg) => {
       this[messages].shift(msg);
       if (this[messages].length > MESSAGE_WINDOW_SIZE) {
         this[messages].pop();
       }
-      aggregator.update();
+      aggregate();
     });
     this[socket].on('userConnected', () => {
       this[userConnected] = true;
-      aggregator.update();
+      aggregate();
     });
     this[socket].on('userDisconnected', () => {
       this[userConnected] = false;
-      aggregator.update();
+      aggregate();
     });
     this[socket].on('err', (msg) => {
       debugger;

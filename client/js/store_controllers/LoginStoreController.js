@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregator, router } from 'flvx';
+import { StoreController, aggregate, route } from 'flvx';
 import { events } from 'events';
 import { api } from 'util';
 
@@ -30,30 +30,30 @@ let error = Symbol();
 
 export class LoginStoreController extends StoreController {
 
-  trigger(event) {
-    switch(event.type) {
+  dispatch(action) {
+    switch(action.type) {
       case events.LOGIN_SUBMITTED:
         api({
           method: 'post',
           endpoint: 'auth',
           content: {
-            username: event.username,
-            password: event.password
+            username: action.username,
+            password: action.password
           }
         }, (status, response) => {
           switch(status) {
             case 401:
               this[error] = 'Invalid username or password';
-              aggregator.update();
+              aggregate();
               break;
             case 200:
-              router.route('decrypt', {
+              route('decrypt', {
                 token: response
               });
               break;
             default:
               this[error] = 'Server Error';
-              aggregator.update();
+              aggregate();
               break;
           }
         });
@@ -69,7 +69,7 @@ export class LoginStoreController extends StoreController {
 
   onConnected(data) {
     this[error] = data.error;
-    aggregator.update();
+    aggregate();
   }
 
 }

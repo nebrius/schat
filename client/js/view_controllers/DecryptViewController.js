@@ -34,7 +34,7 @@ export class DecryptViewController extends ViewController {
     } else if (data.type == 'new') {
       React.renderComponent(new DecryptNewView(data), document.getElementById('content'));
     } else {
-      React.renderComponent(new React.DOM.div(null, null), document.getElementById('content'));
+      React.renderComponent(React.DOM.div(null, null), document.getElementById('content'));
     }
   }
 }

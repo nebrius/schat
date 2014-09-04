@@ -34,7 +34,7 @@ export var DecryptView = React.createClass({
     } else if (this.props.type == 'new') {
       return new DecryptNewView(this.props);
     } else {
-      return new React.DOM.div(null, null);
+      return React.DOM.div(null, null);
     }
   }
 });

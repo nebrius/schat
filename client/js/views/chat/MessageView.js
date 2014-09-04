@@ -23,50 +23,24 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-
-function printTime(timestamp) {
-  let now = new Date();
-  let time = new Date(timestamp);
-  if (now.getDate() == time.getDate() && now.getMonth() == time.getMonth() && now.getFullYear() == time.getFullYear()) {
-    let hours = time.getHours();
-    let minutes = time.getMinutes();
-    if (minutes < 10) {
-      minutes = '0' + minutes;
-    }
-    if (hours === 0) {
-      return '12:' + minutes + ' AM';
-    } else if (hours < 12) {
-      return hours + ':' + minutes + ' AM';
-    } else if (hours == 12) {
-      return '12:' + minutes + ' PM';
-    } else {
-      return (hours - 12) + ':' + minutes + ' PM';
-    }
-  } else if (now.getFullYear() == time.getFullYear()) {
-    return (time.getMonth() + 1) + '/' + time.getDate();
-  } else {
-    return (time.getMonth() + 1) + '/' + time.getDate() + '/' + time.getFullYear();
-  }
-}
-
-window.printTime = printTime;
+import { formatTime } from 'util';
 
 export var MessageView = React.createClass({
   render() {
-    return new React.DOM.div({
+    return React.DOM.div({
       className: 'message_view ' + (this.props.isUser ? 'message_view_user' : 'message_view_other')
     }, [
-      new React.DOM.div({
+      React.DOM.div({
         className: 'message_view_header'
       }, [
-        new React.DOM.span({
+        React.DOM.span({
           className: 'message_view_name'
         }, this.props.name),
-        new React.DOM.div({
+        React.DOM.div({
           className: 'message_view_time'
-        }, printTime(this.props.time))
+        }, formatTime(this.props.time))
       ]),
-      new React.DOM.span({
+      React.DOM.span({
         className: 'message_view_message'
       }, this.props.message)
     ]);

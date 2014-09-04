@@ -23,44 +23,44 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { dispatcher } from 'flvx';
+import { dispatch } from 'flvx';
 import { events } from 'events';
 
 export var DecryptNewView = React.createClass({
   render() {
-    return new React.DOM.form({
+    return React.DOM.form({
       onSubmit: (e) => {
         e.preventDefault();
-        dispatcher.trigger({
+        dispatch({
           type: events.DECRYPTION_PASSWORD_PAIR_SUBMITTED,
           password1: document.getElementById('password1').value,
           password2: document.getElementById('password2').value
         });
       }
     }, [
-      this.props.error ? new React.DOM.div({ className: 'alert alert-danger' }, this.props.error) : null,
-      new React.DOM.div({
+      this.props.error ? React.DOM.div({ className: 'alert alert-danger' }, this.props.error) : null,
+      React.DOM.div({
         className: 'form-group'
       }, [
-        new React.DOM.label(null, 'Decryption Password'),
-        new React.DOM.input({
+        React.DOM.label(null, 'Decryption Password'),
+        React.DOM.input({
           type: 'password',
           className: 'form-control',
           id: 'password1',
           placeholder: 'Enter password'
         })
       ]),
-      new React.DOM.div({
+      React.DOM.div({
         className: 'form-group'
       }, [
-        new React.DOM.input({
+        React.DOM.input({
           type: 'password',
           className: 'form-control',
           id: 'password2',
           placeholder: 'Re-enter password'
         })
       ]),
-      new React.DOM.button({
+      React.DOM.button({
         type: 'submit',
         className: 'btn btn-default'
       }, 'Submit')

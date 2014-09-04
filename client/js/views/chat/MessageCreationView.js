@@ -23,16 +23,16 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { dispatcher } from 'flvx';
+import { dispatch } from 'flvx';
 import { events } from 'events';
 
 export var MessageCreationView = React.createClass({
   render() {
-    return new React.DOM.form({
+    return React.DOM.form({
       className: 'message_creation_view',
       onSubmit: (e) => {
         e.preventDefault();
-        dispatcher.trigger({
+        dispatch({
           type: events.MESSAGE_SUBMITTED,
           message: document.getElementById('message').value
         });

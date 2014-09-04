@@ -23,19 +23,19 @@ THE SOFTWARE.
 */
 
 import React from 'react';
-import { dispatcher } from 'flvx';
+import { dispatch } from 'flvx';
 import { events } from 'events';
 
 export var HeaderView = React.createClass({
   render() {
-    return new React.DOM.div({
+    return React.DOM.div({
       className: 'header_view'
     }, [
       React.DOM.button({
         className: 'btn btn-default dropdown-toggle',
         type: 'button',
         onClick: () => {
-          dispatcher.trigger({
+          dispatch({
             type: events.LOGOUT_REQUESTED
           });
         }
