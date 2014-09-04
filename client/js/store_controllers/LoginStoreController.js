@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 import { StoreController, aggregate, route } from 'flvx';
 import { actions } from 'actions';
-import { api } from 'util';
 
 let error = Symbol();
 
@@ -32,30 +31,13 @@ export class LoginStoreController extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case actions.LOGIN_SUBMITTED:
-        api({
-          method: 'post',
-          endpoint: 'auth',
-          content: {
-            username: action.username,
-            password: action.password
-          }
-        }, (status, response) => {
-          switch(status) {
-            case 401:
-              this[error] = 'Invalid username or password';
-              aggregate();
-              break;
-            case 200:
-              route('decrypt', {
-                token: response
-              });
-              break;
-            default:
-              this[error] = 'Server Error';
-              aggregate();
-              break;
-          }
+      case actions.LOGIN_FAILED:
+        this[error] = action.error;
+        aggregate();
+        break;
+      case actions.LOGIN_SUCCEEDED:
+        route('decrypt', {
+          token: action.token
         });
         break;
     }
