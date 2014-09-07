@@ -88,5 +88,6 @@ export class MessagesStore extends StoreController {
     this[socket].on('err', (msg) => {
       debugger;
     });
+    aggregate();
   }
 }

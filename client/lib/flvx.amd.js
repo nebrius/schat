@@ -1,43 +1,131 @@
 define([], function() {
   "use strict";
-  var StoreController = function StoreController() {};
-  ($traceurRuntime.createClass)(StoreController, {
-    dispatch: function() {
-      throw new Error('"dispatch" must be implemented by a derived store controller');
+  var $__1;
+  var children = Symbol();
+  var internalDispatch = Symbol();
+  var internalOnConnected = Symbol();
+  var internalOnDisconnected = Symbol();
+  var Dispatchable = function Dispatchable() {};
+  ($traceurRuntime.createClass)(Dispatchable, ($__1 = {}, Object.defineProperty($__1, internalDispatch, {
+    value: function(action) {
+      this.dispatch(action);
+      if (this[$traceurRuntime.toProperty(children)]) {
+        for (var $__2 = this[$traceurRuntime.toProperty(children)][$traceurRuntime.toProperty(Symbol.iterator)](),
+            $__3; !($__3 = $__2.next()).done; ) {
+          try {
+            throw undefined;
+          } catch (child) {
+            {
+              child = $__3.value;
+              {
+                child[$traceurRuntime.toProperty(internalDispatch)](action);
+              }
+            }
+          }
+        }
+      }
     },
-    render: function() {
+    configurable: true,
+    enumerable: true,
+    writable: true
+  }), Object.defineProperty($__1, internalOnConnected, {
+    value: function(action) {
+      this.onConnected(action);
+      if (this[$traceurRuntime.toProperty(children)]) {
+        for (var $__2 = this[$traceurRuntime.toProperty(children)][$traceurRuntime.toProperty(Symbol.iterator)](),
+            $__3; !($__3 = $__2.next()).done; ) {
+          try {
+            throw undefined;
+          } catch (child) {
+            {
+              child = $__3.value;
+              {
+                child[$traceurRuntime.toProperty(internalOnConnected)](action);
+              }
+            }
+          }
+        }
+      }
+    },
+    configurable: true,
+    enumerable: true,
+    writable: true
+  }), Object.defineProperty($__1, internalOnDisconnected, {
+    value: function(action) {
+      this.onDisconnected(action);
+      if (this[$traceurRuntime.toProperty(children)]) {
+        for (var $__2 = this[$traceurRuntime.toProperty(children)][$traceurRuntime.toProperty(Symbol.iterator)](),
+            $__3; !($__3 = $__2.next()).done; ) {
+          try {
+            throw undefined;
+          } catch (child) {
+            {
+              child = $__3.value;
+              {
+                child[$traceurRuntime.toProperty(internalOnDisconnected)](action);
+              }
+            }
+          }
+        }
+      }
+    },
+    configurable: true,
+    enumerable: true,
+    writable: true
+  }), Object.defineProperty($__1, "register", {
+    value: function(child) {
+      if (!this[$traceurRuntime.toProperty(children)]) {
+        $traceurRuntime.setProperty(this, children, []);
+      }
+      this[$traceurRuntime.toProperty(children)].push(child);
+    },
+    configurable: true,
+    enumerable: true,
+    writable: true
+  }), Object.defineProperty($__1, "dispatch", {
+    value: function() {},
+    configurable: true,
+    enumerable: true,
+    writable: true
+  }), Object.defineProperty($__1, "onConnected", {
+    value: function() {},
+    configurable: true,
+    enumerable: true,
+    writable: true
+  }), Object.defineProperty($__1, "onDisconnected", {
+    value: function() {},
+    configurable: true,
+    enumerable: true,
+    writable: true
+  }), $__1), {});
+  var StoreController = function StoreController() {
+    $traceurRuntime.defaultSuperCall(this, $StoreController.prototype, arguments);
+  };
+  var $StoreController = StoreController;
+  ($traceurRuntime.createClass)(StoreController, {render: function() {
       throw new Error('"render" must be implemented by a derived store controller');
-    },
-    onConnected: function() {},
-    onDisconnected: function() {}
-  }, {});
-  var Store = function Store() {};
-  ($traceurRuntime.createClass)(Store, {
-    dispatch: function() {
-      throw new Error('"dispatch" must be implemented by a derived store');
-    },
-    render: function() {
+    }}, {}, Dispatchable);
+  var Store = function Store() {
+    $traceurRuntime.defaultSuperCall(this, $Store.prototype, arguments);
+  };
+  var $Store = Store;
+  ($traceurRuntime.createClass)(Store, {render: function() {
       throw new Error('"render" must be implemented by a derived store');
-    },
-    onConnected: function() {},
-    onDisconnected: function() {}
-  }, {});
+    }}, {}, Dispatchable);
+  var LinkController = function LinkController() {
+    $traceurRuntime.defaultSuperCall(this, $LinkController.prototype, arguments);
+  };
+  var $LinkController = LinkController;
+  ($traceurRuntime.createClass)(LinkController, {}, {}, Dispatchable);
+  var Link = function Link() {
+    $traceurRuntime.defaultSuperCall(this, $Link.prototype, arguments);
+  };
+  var $Link = Link;
+  ($traceurRuntime.createClass)(Link, {}, {}, Dispatchable);
   var ViewController = function ViewController() {};
-  ($traceurRuntime.createClass)(ViewController, {
-    render: function() {
+  ($traceurRuntime.createClass)(ViewController, {render: function() {
       throw new Error('"render" must be implemented by a derived view controller');
-    },
-    onConnected: function() {},
-    onDisconnected: function() {}
-  }, {});
-  var LinkController = function LinkController() {};
-  ($traceurRuntime.createClass)(LinkController, {
-    dispatch: function() {
-      throw new Error('"dispatch" must be implemented by a derived link controller');
-    },
-    onConnected: function() {},
-    onDisconnected: function() {}
-  }, {});
+    }}, {});
   var currentStoreController = null;
   var currentViewController = null;
   var currentLinkController = null;
@@ -53,9 +141,9 @@ define([], function() {
       throw new Error('"dispatch" called before first route');
     }
     if (currentLinkController) {
-      currentLinkController.dispatch(action);
+      currentLinkController[$traceurRuntime.toProperty(internalDispatch)](action);
     }
-    currentStoreController.dispatch(action);
+    currentStoreController[$traceurRuntime.toProperty(internalDispatch)](action);
   }
   function registerRoute(name, options) {
     if (!(options.storeController instanceof StoreController)) {
@@ -76,22 +164,18 @@ define([], function() {
     }
     state = state || {};
     if (currentStoreController) {
-      currentStoreController.onDisconnected();
+      currentStoreController[$traceurRuntime.toProperty(internalOnDisconnected)]();
     }
     if (currentLinkController) {
-      currentLinkController.onDisconnected();
-    }
-    if (currentViewController) {
-      currentViewController.onDisconnected();
+      currentLinkController[$traceurRuntime.toProperty(internalOnDisconnected)]();
     }
     currentStoreController = nextRoute.storeController;
     currentLinkController = nextRoute.linkController;
     currentViewController = nextRoute.viewController;
-    currentStoreController.onConnected(state);
+    currentStoreController[$traceurRuntime.toProperty(internalOnConnected)](state);
     if (currentLinkController) {
-      currentLinkController.onConnected();
+      currentLinkController[$traceurRuntime.toProperty(internalOnConnected)]();
     }
-    currentViewController.onConnected();
   }
   return {
     get StoreController() {
@@ -100,11 +184,14 @@ define([], function() {
     get Store() {
       return Store;
     },
-    get ViewController() {
-      return ViewController;
-    },
     get LinkController() {
       return LinkController;
+    },
+    get Link() {
+      return Link;
+    },
+    get ViewController() {
+      return ViewController;
     },
     get aggregate() {
       return aggregate;

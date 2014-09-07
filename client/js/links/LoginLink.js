@@ -22,16 +22,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-export var actions = {
-  LOGIN_SUBMITTED: 'LOGIN_SUBMITTED',
-  LOGIN_FAILED: 'LOGIN_FAILED',
-  LOGIN_SUCCEEDED: 'LOGIN_SUCCEEDED',
-  DECRYPTION_PASSWORD_EXISTS: 'DECRYPTION_PASSWORD_EXISTS',
-  DECRYPTION_PASSWORD_NEEDED: 'DECRYPTION_PASSWORD_NEEDED',
-  DECRYPTION_PASSWORD_SUBMITTED: 'DECRYPTION_PASSWORD_SUBMITTED',
-  DECRYPTION_PASSWORD_PAIR_SUBMITTED: 'DECRYPTION_PASSWORD_PAIR_SUBMITTED',
-  DECRYPTION_SUCCEEDED: 'DECRYPTION_SUCCEEDED',
-  DECRYPTION_FAILED: 'DECRYPTION_FAILED',
-  MESSAGE_SUBMITTED: 'MESSAGE_SUBMITTED',
-  LOGOUT_REQUESTED: 'LOGOUT_REQUESTED'
-};
+import { Link, dispatch } from 'flvx';
+import { actions } from 'actions';
+import { api } from 'util';
+
+let socket = Symbol();
+
+export class LoginLink extends Link {
+  constructor(io) {
+    this[socket] = io;
+  }
+  dispatch(action) {
+    switch(action.type) {
+      case actions.LOGIN_SUBMITTED:
+        api({
+          method: 'post',
+          endpoint: 'auth',
+          content: {
+            username: action.username,
+            password: action.password
+          }
+        }, (status, response) => {
+          switch(status) {
+            case 200:
+              dispatch({
+                type: actions.LOGIN_SUCCEEDED,
+                token: response
+              });
+              break;
+            case 401:
+              dispatch({
+                type: actions.LOGIN_FAILED,
+                error: 'Invalid username or password'
+              });
+              break;
+            default:
+              dispatch({
+                type: actions.LOGIN_FAILED,
+                err: 'Internal server error'
+              });
+              break;
+          }
+        });
+        break;
+    }
+  }
+}

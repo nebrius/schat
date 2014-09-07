@@ -26,61 +26,29 @@ import { StoreController, aggregate, route } from 'flvx';
 import { api, encrypt, decrypt } from 'util';
 import { actions } from 'actions';
 
-let token = Symbol();
 let error = Symbol();
 let type = Symbol();
-let test = Symbol();
-
-const TEST_MESSAGE = 'No one would have believed in the last years of the nineteenth century that this world was being' +
-  ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
-  ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
-  ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.';
 
 export class DecryptStoreController extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case actions.DECRYPTION_PASSWORD_SUBMITTED:
-        let decrypted = decrypt(this[test].message, action.password, this[test].salt);
-        if (decrypted === TEST_MESSAGE) {
-          route('chat', {
-            token: this[token],
-            password: action.password
-          });
-        } else {
-          this[error] = 'Invalid decryption password';
-          aggregate();
-        }
+      case actions.DECRYPTION_PASSWORD_NEEDED:
+        this[type] = 'new';
+        aggregate();
         break;
-      case actions.DECRYPTION_PASSWORD_PAIR_SUBMITTED:
-        if (action.password1 !== action.password2) {
-          this[error] = 'Passwords do not match';
-          aggregate();
-        } else if (!action.password1) {
-          this[error] = 'Passwords must not be empty';
-          aggregate();
-        } else {
-          let encrypted = encrypt(TEST_MESSAGE, action.password1);
-          api({
-            method: 'post',
-            endpoint: 'test',
-            content: {
-              salt: encrypted.salt,
-              message: encrypted.message,
-              token: this[token]
-            }
-          }, (status) => {
-            if (status != 200) {
-              this[error] = 'Internal server error';
-              aggregate();
-            } else {
-              route('chat', {
-                token: this[token],
-                password: action.password1
-              });
-            }
-          });
-        }
+      case actions.DECRYPTION_PASSWORD_EXISTS:
+        this[type] = 'existing';
+        aggregate();
+        break;
+      case actions.DECRYPTION_FAILED:
+        this[error] = action.error;
+        aggregate();
+        break;
+      case actions.DECRYPTION_SUCCEEDED:
+        route('chat', {
+          password: action.password
+        });
         break;
     }
   }
@@ -90,31 +58,5 @@ export class DecryptStoreController extends StoreController {
       type: this[type],
       error: this[error]
     };
-  }
-
-  onConnected(data) {
-    this[token] = data.token;
-    api({
-      method: 'get',
-      endpoint: 'test',
-      content: {
-        token: this[token]
-      }
-    }, (status, response) => {
-      if (status == 404) {
-        this[type] = 'new';
-      } else if (status == 200) {
-        try {
-          this[test] = JSON.parse(response);
-          this[type] = 'existing';
-        } catch(e) {
-          this[error] = 'Internal server error';
-        }
-      } else {
-        this[error] = 'Internal server error';
-      }
-      aggregate();
-    });
-    aggregate();
   }
 }

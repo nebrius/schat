@@ -47,8 +47,6 @@ export class ChatStoreController extends StoreController {
           });
         });
         break;
-      default:
-        this[messages].trigger(action);
     }
   }
 
@@ -61,12 +59,7 @@ export class ChatStoreController extends StoreController {
 
   onConnected(data) {
     this[token] = data.token;
-    (this[messages] = new MessagesStore()).onConnected({
-      token: data.token,
-      username: data.username,
-      password: data.password
-    });
-    aggregate();
+    this.register(this[messages] = new MessagesStore());
   }
 
 }

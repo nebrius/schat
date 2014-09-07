@@ -22,54 +22,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { LinkController, dispatch } from 'flvx';
-import { actions } from 'actions';
-import { api } from 'util';
+import { LinkController } from 'flvx';
+import { LoginLink } from 'links/LoginLink';
+import { DecryptLink } from 'links/DecryptLink';
 import io from 'socketio';
 
 let socket = Symbol();
+let loginLink = Symbol();
+let decryptLink = Symbol();
 
 export class AppLinkController extends LinkController {
-  dispatch(action) {
-    switch(action.type) {
-      case actions.LOGIN_SUBMITTED:
-        api({
-          method: 'post',
-          endpoint: 'auth',
-          content: {
-            username: action.username,
-            password: action.password
-          }
-        }, (status, response) => {
-          switch(status) {
-            case 401:
-              dispatch({
-                type: actions.LOGIN_FAILED,
-                error: 'Invalid username or password'
-              });
-              break;
-            case 200:
-              dispatch({
-                type: actions.LOGIN_SUCCEEDED,
-                token: response
-              });
-              break;
-            default:
-              dispatch({
-                type: actions.LOGIN_FAILED,
-                err: 'Internal server error'
-              });
-              break;
-          }
-        });
-        break;
-    }
-  }
   onConnected() {
     if (this[socket]) {
       return;
     }
     console.log('Connecting to server');
     this[socket] = io();
+    this.register(this[loginLink] = new LoginLink(this[socket]));
+    this.register(this[decryptLink] = new DecryptLink(this[socket]));
   }
 }
