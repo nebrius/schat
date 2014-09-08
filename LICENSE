@@ -1,15 +1,6 @@
-SChat
-=====
-
-SChat is an experiment I'm doing in creating a distributed security chat app that utilizes a lot of new technologies.
-Here's what I'm playing with (buzzwords ahoy): React, Flux, ECMAScript 6, socket.io for everything (no HTTP calls at all), CryptoJS, gulp. 
-
-License
-=======
-
 The MIT License (MIT)
 
-Copyright (c) 2014 Bryan Hughes bryan@theoreticalideations.com (https://theoreticalideations.com)
+Copyright (c) 2014 Bryan Hughes <bryan@theoreticalideations.com> (http://theoreticalideations.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
