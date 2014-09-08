@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 import { Link, dispatch } from 'flvx';
 import { actions } from 'actions';
-import errors from 'shared/errors';
 import messages from 'shared/messages';
 
 let socket = Symbol();
 let token = Symbol();
-let password = Symbol();
+
+const MESSAGE_WINDOW_SIZE = 100;
 
 export class ChatLink extends Link {
   constructor(io) {
@@ -40,17 +40,25 @@ export class ChatLink extends Link {
       case actions.LOGIN_SUCCEEDED:
         this[token] = action.token;
         break;
-      case actions.DECRYPTION_SUCCEEDED:
-        this[password] = action.password;
-        break;
       case actions.LOGOUT_REQUESTED:
         this[socket].emit(messages.LOGOUT, {
           token: this[token]
         });
         break;
+      case actions.MESSAGE_SUBMITTED:
+        this[socket].emit(messages.SUBMIT_NEW_MESSAGE, {
+          token: this[token],
+          message: action.message
+        });
     }
   }
   onConnected() {
+    this[socket].emit(messages.GET_MESSAGE_BLOCK, {
+      token: this[token],
+      start: 0,
+      count: MESSAGE_WINDOW_SIZE
+    });
+
     this[socket].on(messages.LOGOUT_RESPONSE, (msg) => {
       if (msg.success) {
         dispatch({
@@ -62,6 +70,26 @@ export class ChatLink extends Link {
           error: 'Server Error'
         });
       }
+    });
+
+    this[socket].on(messages.GET_MESSAGE_BLOCK_RESPONSE, (msg) => {
+      if (msg.success) {
+        dispatch({
+          type: actions.RECEIVED_MESSAGE_BLOCK,
+          messages: msg.messages
+        });
+      } else {
+        dispatch({
+          type: actions.ERROR_FETCHING_MESSAGE_BLOCK
+        });
+      }
+    });
+
+    this[socket].on(messages.NEW_MESSAGE, (msg) => {
+      dispatch({
+        type: actions.RECEIVED_NEW_MESSAGE,
+        message: msg.message
+      });
     });
   }
 }

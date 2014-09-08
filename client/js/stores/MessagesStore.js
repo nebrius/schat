@@ -24,25 +24,35 @@ THE SOFTWARE.
 
 import { StoreController, aggregate } from 'flvx';
 import { actions } from 'actions';
-import io from 'socketio';
 
-let token = Symbol();
 let password = Symbol();
-let username = Symbol();
 let messages = Symbol();
-let socket = Symbol();
-let userConnected = Symbol();
+let error = Symbol();
 
-const MESSAGE_WINDOW_SIZE = 100;
+const ERROR_PERSISTENCE = 2000;
 
 export class MessagesStore extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case actions.MESSAGE_SUBMITTED:
-        this[socket].emit('sendMessage', {
-          token: this[token]
-        });
+      case actions.DECRYPTION_SUCCEEDED:
+        this[password] = action.password;
+        break;
+      case actions.RECEIVED_MESSAGE_BLOCK:
+        this[messages] = action.messages;
+        aggregate();
+        break;
+      case actions.ERROR_FETCHING_MESSAGE_BLOCK:
+        this[error] = 'Could not fetch messages from server';
+        setTimeout(() => {
+          this[error] = null;
+          aggregate();
+        }, ERROR_PERSISTENCE);
+        aggregate();
+        break;
+      case actions.RECEIVED_NEW_MESSAGE:
+        this[messages].push(action.message);
+        aggregate();
         break;
     }
   }
@@ -50,41 +60,12 @@ export class MessagesStore extends StoreController {
   render() {
     return {
       messages: this[messages],
-      userConnected: this[userConnected]
+      error: this[error]
     };
   }
 
   onConnected() {
     this[messages] = [];
-
-    /*this[socket] = io(window.location.host);
-    this[socket].emit('getMessages', {
-      token: this[token],
-      start: 0,
-      count: MESSAGE_WINDOW_SIZE
-    });
-    this[socket].on('messages', (msg) => {
-      this[messages] = msg;
-      aggregate();
-    });
-    this[socket].on('newMessage', (msg) => {
-      this[messages].shift(msg);
-      if (this[messages].length > MESSAGE_WINDOW_SIZE) {
-        this[messages].pop();
-      }
-      aggregate();
-    });
-    this[socket].on('userConnected', () => {
-      this[userConnected] = true;
-      aggregate();
-    });
-    this[socket].on('userDisconnected', () => {
-      this[userConnected] = false;
-      aggregate();
-    });
-    this[socket].on('err', (msg) => {
-      debugger;
-    });*/
     aggregate();
   }
 }

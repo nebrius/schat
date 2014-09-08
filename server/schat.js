@@ -266,51 +266,56 @@ module.exports = function run(options) {
         });
       });
 
-      socket.on('sendMessage', function(msg) {
-        debugger;
-      });
-
-      socket.on('getMessages', function(msg) {
+      socket.on(messages.GET_MESSAGE_BLOCK, function(msg) {
         users.isTokenValid(decodeToken(msg.token), function(err, valid) {
           if (err) {
-            socket.emit('internal error');
+            socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
+              success: false,
+              error: errors.SERVER_ERROR
+            });
             logger.error('err', 'Error validating token: ' + err);
           } else if (!valid) {
-            socket.emit('err', 'unauthorized');
+            socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
+              success: false,
+              error: errors.UNAUTHORIZED
+            });
           } else {
             var MINUTES_IN_MILLIS = 1000 * 60;
-            socket.emit('messages', [{
-              time: Date.now() - MINUTES_IN_MILLIS,
-              isUser: false,
-              name: 'Bob',
-              message: 'you?'
-            }, {
-              time: Date.now() - MINUTES_IN_MILLIS * 2,
-              isUser: false,
-              name: 'Bob',
-              message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
-                ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
-                ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
-                ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
-            }, {
-              time: Date.now() - MINUTES_IN_MILLIS * 5,
-              isUser: true,
-              name: 'Alice',
-              message: 'how are you?'
-            }, {
-              time: Date.now() - MINUTES_IN_MILLIS * 8,
-              isUser: false,
-              name: 'Bob',
-              message: 'hello'
-            }, {
-              time: Date.now() - MINUTES_IN_MILLIS * 10,
-              isUser: true,
-              name: 'Alice',
-              message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
-                ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
-                ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
-                ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
-            }]);
+            socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
+              success: true,
+              messages: [{
+                time: Date.now() - MINUTES_IN_MILLIS,
+                isUser: false,
+                name: 'Bob',
+                message: 'you?'
+              }, {
+                time: Date.now() - MINUTES_IN_MILLIS * 2,
+                isUser: false,
+                name: 'Bob',
+                message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
+                  ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
+                  ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
+                  ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
+              }, {
+                time: Date.now() - MINUTES_IN_MILLIS * 5,
+                isUser: true,
+                name: 'Alice',
+                message: 'how are you?'
+              }, {
+                time: Date.now() - MINUTES_IN_MILLIS * 8,
+                isUser: false,
+                name: 'Bob',
+                message: 'hello'
+              }, {
+                time: Date.now() - MINUTES_IN_MILLIS * 10,
+                isUser: true,
+                name: 'Alice',
+                message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
+                  ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
+                  ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
+                  ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
+              }]
+            });
           }
         });
       });
