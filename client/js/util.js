@@ -48,29 +48,6 @@ export function decrypt(message, password, salt) {
   return CryptoJS.enc.Latin1.stringify(CryptoJS.AES.decrypt(message, hash));
 }
 
-export function api(config, cb) {
-  let xhr = new XMLHttpRequest();
-  let data = [];
-  config.content = config.content || {};
-  for (let p in config.content) {
-    data.push(p + '=' + config.content[p]);
-  }
-  data = data.join('&');
-  xhr.onload = () => {
-    cb(xhr.status, xhr.responseText);
-  };
-
-  if (config.method == 'post') {
-    xhr.open('post', '/api/' + config.endpoint, true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.send(data);
-  } else if (config.method == 'get') {
-    xhr.open('get', '/api/' + config.endpoint + '?' + data, true);
-    xhr.send();
-  } else {
-    throw new Error('Unsupported API method "' + config.method + '"');
-  }
-}
 export function formatTime(timestamp) {
   let now = new Date();
   let time = new Date(timestamp);

@@ -54,13 +54,10 @@ export class MessagesStore extends StoreController {
     };
   }
 
-  onConnected(data) {
-    this[token] = data.token;
-    this[username] = data.username;
-    this[password] = data.password;
+  onConnected() {
     this[messages] = [];
 
-    this[socket] = io(window.location.host);
+    /*this[socket] = io(window.location.host);
     this[socket].emit('getMessages', {
       token: this[token],
       start: 0,
@@ -87,7 +84,7 @@ export class MessagesStore extends StoreController {
     });
     this[socket].on('err', (msg) => {
       debugger;
-    });
+    });*/
     aggregate();
   }
 }

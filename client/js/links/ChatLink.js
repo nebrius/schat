@@ -24,10 +24,12 @@ THE SOFTWARE.
 
 import { Link, dispatch } from 'flvx';
 import { actions } from 'actions';
-import { api } from 'util';
+import errors from 'shared/errors';
+import messages from 'shared/messages';
 
 let socket = Symbol();
 let token = Symbol();
+let password = Symbol();
 
 export class ChatLink extends Link {
   constructor(io) {
@@ -38,6 +40,28 @@ export class ChatLink extends Link {
       case actions.LOGIN_SUCCEEDED:
         this[token] = action.token;
         break;
+      case actions.DECRYPTION_SUCCEEDED:
+        this[password] = action.password;
+        break;
+      case actions.LOGOUT_REQUESTED:
+        this[socket].emit(messages.LOGOUT, {
+          token: this[token]
+        });
+        break;
     }
+  }
+  onConnected() {
+    this[socket].on(messages.LOGOUT_RESPONSE, (msg) => {
+      if (msg.success) {
+        dispatch({
+          type: actions.LOGOUT_SUCCEEDED
+        });
+      } else {
+        dispatch({
+          type: actions.LOGOUT_FAILED,
+          error: 'Server Error'
+        });
+      }
+    });
   }
 }

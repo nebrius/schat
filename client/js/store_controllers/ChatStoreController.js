@@ -22,30 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregate, route } from 'flvx';
+import { StoreController, route } from 'flvx';
 import { MessagesStore } from 'stores/MessagesStore';
-import { api } from 'util';
 import { actions } from 'actions';
 
-let token = Symbol();
 let messages = Symbol();
 
 export class ChatStoreController extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case actions.LOGOUT_REQUESTED:
-        api({
-          method: 'post',
-          endpoint: 'logout',
-          content: {
-            token: this[token]
-          }
-        }, () => {
-          route('login', {
-            token: this[token]
-          });
-        });
+      case actions.LOGOUT_SUCCEEDED:
+        route('login');
         break;
     }
   }
@@ -57,8 +45,7 @@ export class ChatStoreController extends StoreController {
     };
   }
 
-  onConnected(data) {
-    this[token] = data.token;
+  onConnected() {
     this.register(this[messages] = new MessagesStore());
   }
 
