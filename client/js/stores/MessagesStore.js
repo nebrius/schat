@@ -28,6 +28,7 @@ import { actions } from 'actions';
 let password = Symbol();
 let messages = Symbol();
 let error = Symbol();
+let lockedToBottom = Symbol();
 
 const ERROR_PERSISTENCE = 2000;
 
@@ -60,12 +61,14 @@ export class MessagesStore extends StoreController {
   render() {
     return {
       messages: this[messages],
-      error: this[error]
+      error: this[error],
+      lockedToBottom: this[lockedToBottom]
     };
   }
 
   onConnected() {
     this[messages] = [];
+    this[lockedToBottom] = true;
     aggregate();
   }
 }

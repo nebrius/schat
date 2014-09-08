@@ -39,10 +39,7 @@ export class ChatStoreController extends StoreController {
   }
 
   render() {
-    return {
-      lockedToBottom: false,
-      messages: this[messages].render().messages
-    };
+    return this[messages].render();
   }
 
   onConnected() {
