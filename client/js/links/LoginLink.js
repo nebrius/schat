@@ -24,7 +24,8 @@ THE SOFTWARE.
 
 import { Link, dispatch } from 'flvx';
 import { actions } from 'actions';
-import { api } from 'util';
+import errors from 'shared/errors';
+import messages from 'shared/messages';
 
 let socket = Symbol();
 
@@ -35,36 +36,26 @@ export class LoginLink extends Link {
   dispatch(action) {
     switch(action.type) {
       case actions.LOGIN_SUBMITTED:
-        api({
-          method: 'post',
-          endpoint: 'auth',
-          content: {
-            username: action.username,
-            password: action.password
-          }
-        }, (status, response) => {
-          switch(status) {
-            case 200:
-              dispatch({
-                type: actions.LOGIN_SUCCEEDED,
-                token: response
-              });
-              break;
-            case 401:
-              dispatch({
-                type: actions.LOGIN_FAILED,
-                error: 'Invalid username or password'
-              });
-              break;
-            default:
-              dispatch({
-                type: actions.LOGIN_FAILED,
-                err: 'Internal server error'
-              });
-              break;
-          }
+        this[socket].emit(messages.AUTH, {
+          username: action.username,
+          password: action.password
         });
         break;
     }
+  }
+  onConnected() {
+    this[socket].on(messages.AUTH_RESPONSE, (msg) => {
+      if (msg.success) {
+        dispatch({
+          type: actions.LOGIN_SUCCEEDED,
+          token: msg.token
+        });
+      } else {
+        dispatch({
+          type: actions.LOGIN_FAILED,
+          error: msg.error == errors.UNAUTHORIZED ? 'Invalid username or password' : 'Server error'
+        });
+      }
+    });
   }
 }

@@ -30,6 +30,8 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var socketio = require('socket.io');
 var http = require('http');
+var errors = require('../shared/errors');
+var messages = require('../shared/messages');
 
 module.exports = function run(options) {
 
@@ -91,124 +93,183 @@ module.exports = function run(options) {
       return decodeURIComponent(token).replace(/\s/g, '+');
     }
 
-    // HTTP API methods, non-message related
-
-    app.post('/api/auth', function(request, response) {
-      var username = request.body.username;
-      var password = request.body.password;
-      users.authenticateUser(username, password, function(err, result) {
-        if (err) {
-          response.status(500).send('internal error');
-          logger.error('Error authenticating user: ' + err);
-        } else if (!result.userExists || !result.passwordsMatch) {
-          response.status(401).send('unauthorized');
-        } else {
-          response.status(200).send(result.token);
-        }
-      });
-    });
-
-    app.post('/api/logout', function(request, response) {
-      users.isTokenValid(decodeToken(request.body.token), function(err, valid) {
-        if (err) {
-          response.status(500).send('internal error');
-          logger.error('Error validating token: ' + err);
-        } else if (!valid) {
-          response.status(401).send('unauthorized');
-        } else {
-          users.expireToken(request.body.token, function(err) {
-            if (err) {
-              response.status(500).send('internal error');
-              logger.error('Error validating token: ' + err);
-            } else {
-              response.status(200).send('ok');
-            }
-          });
-        }
-      });
-    });
-
-    app.get('/api/test', function(request, response) {
-      users.isTokenValid(decodeToken(request.query.token), function(err, valid) {
-        if (err) {
-          response.status(500).send('internal error');
-          logger.error('Error validating token: ' + err);
-        } else if (!valid) {
-          response.status(401).send('unauthorized');
-        } else {
-          database.collection('test', function(err, col) {
-            if (err) {
-              response.status(500).send('Internal error');
-              logger.error('Error getting the test collection: ' + err);
-              return;
-            }
-            col.findOne({}, function(err, item) {
-              if (err) {
-                response.status(500).send('Internal error');
-                logger.error('Error getting the test item: ' + err);
-                return;
-              }
-              if (!item) {
-                response.status(404).send('');
-              } else {
-                response.status(200).send(JSON.stringify({
-                  salt: item.salt,
-                  message: item.message
-                }));
-              }
-            });
-          });
-        }
-      });
-    });
-
-    app.post('/api/test', function(request, response) {
-      var salt = request.body.salt;
-      var message = request.body.message;
-      users.isTokenValid(decodeToken(request.body.token), function(err, valid) {
-        if (err) {
-          response.status(500).send('internal error');
-          logger.error('Error validating token: ' + err);
-        } else if (!valid) {
-          response.status(401).send('unauthorized');
-        } else {
-          database.collection('test', function(err, col) {
-            if (err) {
-              response.status(500).send('Internal error');
-              logger.error('Error getting the test collection: ' + err);
-              return;
-            }
-            col.findOne({}, function(err, item) {
-              if (item) {
-                response.status(400).send('Bad request');
-                logger.warning('Client attempted to overwrite existing test message');
-                return;
-              }
-              col.insert({
-                salt: salt,
-                message: message
-              }, { w: 1 }, function(err) {
-                if (err) {
-                  response.status(500).send('Internal error');
-                  logger.error('Error inserting the test message: ' + err);
-                  return;
-                }
-                response.status(200).send('ok');
-              });
-            });
-          });
-        }
-      });
-    });
-
-    // Socket.io messaging methods
     io.on('connection', function(socket) {
       socket.on('disconnect', function(msg) {
-        debugger;
       });
+
+      socket.on(messages.AUTH, function(msg) {
+        var username = msg.username;
+        var password = msg.password;
+        users.authenticateUser(username, password, function(err, result) {
+          if (err) {
+            socket.emit(messages.AUTH_RESPONSE, {
+              success: false,
+              error: errors.SERVER_ERROR
+            });
+            logger.error('Error authenticating user: ' + err);
+          } else if (!result.userExists || !result.passwordsMatch) {
+            socket.emit(messages.AUTH_RESPONSE, {
+              success: false,
+              error: errors.UNAUTHORIZED
+            });
+          } else {
+            socket.emit(messages.AUTH_RESPONSE, {
+              success: true,
+              token: result.token
+            });
+          }
+        });
+      });
+
+      socket.on(messages.LOGOUT, function(msg) {
+        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
+          if (err) {
+            socket.emit(messages.LOGOUT_RESPONSE, {
+              success: false,
+              error: errors.SERVER_ERROR
+            });
+            logger.error('Error validating token: ' + err);
+          } else if (!valid) {
+            socket.emit(messages.LOGOUT_RESPONSE, {
+              success: false,
+              error: errors.UNAUTHORIZED
+            });
+          } else {
+            users.expireToken(msg.token, function(err) {
+              if (err) {
+                socket.emit(messages.LOGOUT_RESPONSE, {
+                  success: false,
+                  error: errors.SERVER_ERROR
+                });
+                logger.error('Error validating token: ' + err);
+              } else {
+                socket.emit(messages.LOGOUT_RESPONSE, {
+                  success: true
+                });
+              }
+            });
+          }
+        });
+      });
+
+      socket.on(messages.GET_TEST, function(msg) {
+        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
+          if (err) {
+            socket.emit(messages.GET_TEST_RESPONSE, {
+              success: false,
+              error: errors.SERVER_ERROR
+            });
+            logger.error('Error validating token: ' + err);
+          } else if (!valid) {
+            socket.emit(messages.GET_TEST_RESPONSE, {
+              success: false,
+              error: errors.UNAUTHORIZED
+            });
+          } else {
+            database.collection('test', function(err, col) {
+              if (err) {
+                socket.emit(messages.GET_TEST_RESPONSE, {
+                  success: false,
+                  error: errors.SERVER_ERROR
+                });
+                logger.error('Error getting the test collection: ' + err);
+                return;
+              }
+              col.findOne({}, function(err, item) {
+                if (err) {
+                  socket.emit(messages.GET_TEST_RESPONSE, {
+                    success: false,
+                    error: errors.SERVER_ERROR
+                  });
+                  logger.error('Error getting the test item: ' + err);
+                  return;
+                }
+                if (!item) {
+                  socket.emit(messages.GET_TEST_RESPONSE, {
+                    success: false,
+                    error: errors.TEST_NOT_SET
+                  });
+                } else {
+                  socket.emit(messages.GET_TEST_RESPONSE, {
+                    success: true,
+                    salt: item.salt,
+                    message: item.message
+                  });
+                }
+              });
+            });
+          }
+        });
+      });
+
+      socket.on(messages.SET_TEST, function(msg) {
+        var salt = msg.salt;
+        var message = msg.message;
+        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
+          if (err) {
+            socket.emit(messages.SET_TEST_RESPONSE, {
+              success: false,
+              error: errors.SERVER_ERROR
+            });
+            logger.error('Error validating token: ' + err);
+          } else if (!valid) {
+            socket.emit(messages.SET_TEST_RESPONSE, {
+              success: false,
+              error: errors.UNAUTHORIZED
+            });
+          } else {
+            database.collection('test', function(err, col) {
+              if (err) {
+                socket.emit(messages.SET_TEST_RESPONSE, {
+                  success: false,
+                  error: errors.SERVER_ERROR
+                });
+                logger.error('Error getting the test collection: ' + err);
+                return;
+              }
+              col.findOne({}, function(err, item) {
+                if (err) {
+                  socket.emit(messages.SET_TEST_RESPONSE, {
+                    success: false,
+                    error: errors.SERVER_ERROR
+                  });
+                  logger.error('Error finding the test message: ' + err);
+                  return;
+                }
+                if (item) {
+                  socket.emit(messages.SET_TEST_RESPONSE, {
+                    success: false,
+                    error: errors.INVALID_REQUEST
+                  });
+                  logger.warning('Client attempted to overwrite existing test message');
+                  return;
+                }
+                col.insert({
+                  salt: salt,
+                  message: message
+                }, { w: 1 }, function(err) {
+                  if (err) {
+                    socket.emit(messages.SET_TEST_RESPONSE, {
+                      success: false,
+                      error: errors.SERVER_ERROR
+                    });
+                    logger.error('Error inserting the test message: ' + err);
+                    return;
+                  }
+                  socket.emit(messages.SET_TEST_RESPONSE, {
+                    success: true
+                  });
+                });
+              });
+            });
+          }
+        });
+      });
+
       socket.on('sendMessage', function(msg) {
         debugger;
       });
+
       socket.on('getMessages', function(msg) {
         users.isTokenValid(decodeToken(msg.token), function(err, valid) {
           if (err) {

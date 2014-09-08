@@ -22,43 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-var gulp = require('gulp');
-var traceur = require('gulp-traceur');
-var del = require('del');
+var messages = {
+  AUTH: 'AUTH',
+  AUTH_RESPONSE: 'AUTH_RESPONSE',
+  LOGOUT: 'LOGOUT',
+  LOGOUT_RESPONSE: 'LOGOUT_RESPONSE',
 
-gulp.task('default', ['clean'], function() {
-  return gulp.start(['index.html', 'libs', 'shared', 'css', 'js']);
-});
+  GET_TEST: 'GET_TEST',
+  GET_TEST_RESPONSE: 'GET_TEST_RESPONSE',
+  SET_TEST: 'SET_TEST',
+  SET_TEST_RESPONSE: 'SET_TEST_RESPONSE'
+};
 
-gulp.task('index.html', function() {
-  return gulp.src('client/index.html')
-    .pipe(gulp.dest('client-dist'));
-});
-
-gulp.task('libs', function() {
-  return gulp.src('client/lib/*')
-    .pipe(gulp.dest('client-dist/lib'));
-});
-
-gulp.task('css', function() {
-  return gulp.src('client/css/*')
-    .pipe(gulp.dest('client-dist/css'));
-});
-
-gulp.task('js', function() {
-  return gulp.src('client/js/**/*')
-    .pipe(traceur({
-      experimental: true,
-      modules: 'amd'
-    }))
-    .pipe(gulp.dest('client-dist/js'));
-});
-
-gulp.task('shared', function() {
-  return gulp.src('shared/**/*')
-    .pipe(gulp.dest('client-dist/js/shared'));
-});
-
-gulp.task('clean', function(cb) {
-  del(['client-dist'], cb);
-});
+if (typeof module != 'undefined') {
+  module.exports = messages;
+} else {
+  define(function() {
+    return messages;
+  });
+}

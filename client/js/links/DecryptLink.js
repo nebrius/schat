@@ -24,7 +24,9 @@ THE SOFTWARE.
 
 import { Link, dispatch } from 'flvx';
 import { actions } from 'actions';
-import { api, decrypt, encrypt } from 'util';
+import { decrypt, encrypt } from 'util';
+import errors from 'shared/errors';
+import messages from 'shared/messages';
 
 const TEST_MESSAGE = 'No one would have believed in the last years of the nineteenth century that this world was being' +
   ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
@@ -34,6 +36,7 @@ const TEST_MESSAGE = 'No one would have believed in the last years of the ninete
 let socket = Symbol();
 let token = Symbol();
 let test = Symbol();
+let password = Symbol();
 
 export class DecryptLink extends Link {
   constructor(io) {
@@ -43,37 +46,11 @@ export class DecryptLink extends Link {
     switch(action.type) {
       case actions.LOGIN_SUCCEEDED:
         this[token] = action.token;
-        api({
-          method: 'get',
-          endpoint: 'test',
-          content: {
-            token: this[token]
-          }
-        }, (status, response) => {
-          if (status == 404) {
-            dispatch({
-              type: actions.DECRYPTION_PASSWORD_NEEDED
-            });
-          } else if (status == 200) {
-            try {
-              this[test] = JSON.parse(response);
-              dispatch({
-                type: actions.DECRYPTION_PASSWORD_EXISTS
-              });
-            } catch(e) {
-              dispatch({
-                type: actions.DECRYPTION_FAILED,
-                error: 'Server Error'
-              });
-            }
-          } else {
-            dispatch({
-              type: actions.DECRYPTION_FAILED,
-              error: 'Server Error'
-            });
-          }
+        this[socket].emit(messages.GET_TEST, {
+          token: this[token]
         });
         break;
+
       case actions.DECRYPTION_PASSWORD_SUBMITTED:
         let decrypted = decrypt(this[test].message, action.password, this[test].salt);
         if (decrypted === TEST_MESSAGE) {
@@ -88,6 +65,7 @@ export class DecryptLink extends Link {
           });
         }
         break;
+
       case actions.DECRYPTION_PASSWORD_PAIR_SUBMITTED:
         if (action.password1 !== action.password2) {
           dispatch({
@@ -100,30 +78,50 @@ export class DecryptLink extends Link {
             error: 'Passwords must not be empty'
           });
         } else {
-          let encrypted = encrypt(TEST_MESSAGE, action.password1);
-          api({
-            method: 'post',
-            endpoint: 'test',
-            content: {
-              salt: encrypted.salt,
-              message: encrypted.message,
-              token: this[token]
-            }
-          }, (status) => {
-            if (status != 200) {
-              dispatch({
-                type: actions.DECRYPTION_FAILED,
-                error: 'Server Error'
-              });
-            } else {
-              dispatch({
-                type: actions.DECRYPTION_SUCCEEDED,
-                password: action.password1
-              });
-            }
+          let encrypted = encrypt(TEST_MESSAGE, this[password] = action.password1);
+          this[socket].emit(messages.SET_TEST, {
+            salt: encrypted.salt,
+            message: encrypted.message,
+            token: this[token]
           });
         }
         break;
     }
+  }
+  onConnected() {
+    this[socket].on(messages.GET_TEST_RESPONSE, (msg) => {
+      if (msg.success) {
+        let { message: message, salt: salt } = msg;
+        this[test] = {
+          message: message,
+          salt: salt
+        };
+        dispatch({
+          type: actions.DECRYPTION_PASSWORD_EXISTS
+        });
+      } else if (msg.error == errors.TEST_NOT_SET){
+        dispatch({
+          type: actions.DECRYPTION_PASSWORD_NEEDED
+        });
+      } else {
+        dispatch({
+          type: actions.DECRYPTION_FAILED,
+          error: 'Server Error'
+        });
+      }
+    });
+    this[socket].on(messages.SET_TEST_RESPONSE, (msg) => {
+      if (msg.success) {
+        dispatch({
+          type: actions.DECRYPTION_SUCCEEDED,
+          password: this[password]
+        });
+      } else {
+        dispatch({
+          type: actions.DECRYPTION_FAILED,
+          error: 'Server Error'
+        });
+      }
+    });
   }
 }
