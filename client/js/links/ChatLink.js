@@ -24,10 +24,14 @@ THE SOFTWARE.
 
 import { Link, dispatch } from 'flvx';
 import { actions } from 'actions';
+import { encrypt, decrypt } from 'util';
 import messages from 'shared/messages';
 
 let socket = Symbol();
 let token = Symbol();
+let username = Symbol();
+let password = Symbol();
+let initSocket = Symbol();
 
 const MESSAGE_WINDOW_SIZE = 100;
 
@@ -37,8 +41,24 @@ export class ChatLink extends Link {
   }
   dispatch(action) {
     switch(action.type) {
+      case actions.LOGIN_SUBMITTED:
+        this[username] = action.username;
+        break;
       case actions.LOGIN_SUCCEEDED:
         this[token] = action.token;
+        this[initSocket]();
+        break;
+      case actions.DECRYPTION_SUCCEEDED:
+        this[password] = action.password;
+        break;
+      case actions.ROUTED:
+        if (action.route == 'chat') {
+          this[socket].emit(messages.GET_MESSAGE_BLOCK, {
+            token: this[token],
+            start: 0,
+            count: MESSAGE_WINDOW_SIZE
+          });
+        }
         break;
       case actions.LOGOUT_REQUESTED:
         this[socket].emit(messages.LOGOUT, {
@@ -46,18 +66,22 @@ export class ChatLink extends Link {
         });
         break;
       case actions.MESSAGE_SUBMITTED:
+        let { salt: salt, message: message } = encrypt(action.message, this[password]);
         this[socket].emit(messages.SUBMIT_NEW_MESSAGE, {
           token: this[token],
-          message: action.message
+          salt: salt,
+          message: message
         });
     }
   }
-  onConnected() {
-    this[socket].emit(messages.GET_MESSAGE_BLOCK, {
-      token: this[token],
-      start: 0,
-      count: MESSAGE_WINDOW_SIZE
-    });
+  [initSocket]() {
+
+    let decryptMessage = (msg) => {
+      msg.isUser = msg.name == this[username];
+      msg.message = decrypt(msg.message, this[password], msg.salt);
+      delete msg.salt;
+      return msg;
+    };
 
     this[socket].on(messages.LOGOUT_RESPONSE, (msg) => {
       if (msg.success) {
@@ -76,7 +100,7 @@ export class ChatLink extends Link {
       if (msg.success) {
         dispatch({
           type: actions.RECEIVED_MESSAGE_BLOCK,
-          messages: msg.messages
+          messages: msg.messages.map(decryptMessage)
         });
       } else {
         dispatch({
@@ -88,7 +112,7 @@ export class ChatLink extends Link {
     this[socket].on(messages.NEW_MESSAGE, (msg) => {
       dispatch({
         type: actions.RECEIVED_NEW_MESSAGE,
-        message: msg.message
+        message: decryptMessage(msg)
       });
     });
   }

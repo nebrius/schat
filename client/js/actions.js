@@ -23,6 +23,8 @@ THE SOFTWARE.
 */
 
 export var actions = {
+  ROUTED: 'routed', // from Flvx proper
+
   LOGIN_SUBMITTED: 'LOGIN_SUBMITTED',
   LOGIN_FAILED: 'LOGIN_FAILED',
   LOGIN_SUCCEEDED: 'LOGIN_SUCCEEDED',

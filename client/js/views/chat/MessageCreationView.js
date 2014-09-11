@@ -36,6 +36,7 @@ export var MessageCreationView = React.createClass({
           type: actions.MESSAGE_SUBMITTED,
           message: document.getElementById('message').value
         });
+        this.getDOMNode().children[0].value = '';
       }
     }, [
       React.DOM.input({

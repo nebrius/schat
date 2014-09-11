@@ -280,41 +280,55 @@ module.exports = function run(options) {
               error: errors.UNAUTHORIZED
             });
           } else {
-            var MINUTES_IN_MILLIS = 1000 * 60;
-            socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
-              success: true,
-              messages: [{
-                time: Date.now() - MINUTES_IN_MILLIS,
-                isUser: false,
-                name: 'Bob',
-                message: 'you?'
-              }, {
-                time: Date.now() - MINUTES_IN_MILLIS * 2,
-                isUser: false,
-                name: 'Bob',
-                message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
-                  ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
-                  ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
-                  ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
-              }, {
-                time: Date.now() - MINUTES_IN_MILLIS * 5,
-                isUser: true,
-                name: 'Alice',
-                message: 'how are you?'
-              }, {
-                time: Date.now() - MINUTES_IN_MILLIS * 8,
-                isUser: false,
-                name: 'Bob',
-                message: 'hello'
-              }, {
-                time: Date.now() - MINUTES_IN_MILLIS * 10,
-                isUser: true,
-                name: 'Alice',
-                message: 'No one would have believed in the last years of the nineteenth century that this world was being' +
-                  ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +
-                  ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
-                  ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.'
-              }]
+            var count = parseInt(msg.count);
+            if (isNaN(count)) {
+              count = 100;
+            }
+            var start = parseInt(msg.start);
+            if (isNaN(start)) {
+              start = 0;
+            }
+            collection.find({}, { _id: false }).sort({ time: -1 }).limit(count).skip(start).toArray(function(err, msgs) {
+              if (err) {
+                socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
+                  success: false,
+                  error: errors.SERVER_ERROR
+                });
+                logger.error('err', 'Error validating token: ' + err);
+              } else {
+                socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
+                  success: true,
+                  messages: msgs || []
+                });
+              }
+            });
+          }
+        });
+      });
+
+      socket.on(messages.SUBMIT_NEW_MESSAGE, function(msg) {
+        users.isTokenValid(decodeToken(msg.token), function (err, valid) {
+          if (err) {
+            logger.error('err', 'Error validating token: ' + err);
+          } else if (valid) {
+            users.getUsernameForToken(msg.token, function(err, username) {
+              if (err) {
+                logger.error('err', 'Error getting a username from a token: ' + err);
+                return;
+              }
+              var entry = {
+                message: msg.message,
+                salt: msg.salt,
+                name: username,
+                time: Date.now()
+              };
+              collection.insert(entry, { w: 1 }, function(err) {
+                if (err) {
+                  logger.error('Error inserting a message: ' + err);
+                  return;
+                }
+                io.emit(messages.NEW_MESSAGE, entry);
+              });
             });
           }
         });

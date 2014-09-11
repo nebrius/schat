@@ -25,7 +25,6 @@ THE SOFTWARE.
 import { StoreController, aggregate } from 'flvx';
 import { actions } from 'actions';
 
-let password = Symbol();
 let messages = Symbol();
 let error = Symbol();
 let lockedToBottom = Symbol();
@@ -36,9 +35,6 @@ export class MessagesStore extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case actions.DECRYPTION_SUCCEEDED:
-        this[password] = action.password;
-        break;
       case actions.RECEIVED_MESSAGE_BLOCK:
         this[messages] = action.messages;
         aggregate();
@@ -52,7 +48,7 @@ export class MessagesStore extends StoreController {
         aggregate();
         break;
       case actions.RECEIVED_NEW_MESSAGE:
-        this[messages].push(action.message);
+        this[messages].unshift(action.message);
         aggregate();
         break;
     }

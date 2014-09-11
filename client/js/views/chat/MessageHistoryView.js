@@ -25,11 +25,12 @@ THE SOFTWARE.
 import React from 'react';
 import { MessageView } from 'views/chat/MessageView';
 
+let timeout = Symbol();
+
 export var MessageHistoryView = React.createClass({
   render() {
     return React.DOM.div({
-      className: 'message_history_view',
-      scrollTop: Number.MAX_SAFE_INTEGER
+      className: 'message_history_view'
     }, [
       React.DOM.div({
         className: 'message_history_view_container'
@@ -38,8 +39,22 @@ export var MessageHistoryView = React.createClass({
   },
   componentDidMount() {
     if (this.props.lockedToBottom) {
-      let parent = this.getDOMNode();
-      parent.scrollTop = parseInt(window.getComputedStyle(parent.children[0]).height);
+      // I hate this
+      this[timeout] = setTimeout(() => {
+        this[timeout] = null;
+        let parent = this.getDOMNode();
+        let container = parent.children[0];
+        let parentHeight = parseInt(window.getComputedStyle(parent).height);
+        let containerHeight = parseInt(window.getComputedStyle(container).height);
+        if (parentHeight > containerHeight) {
+          container.style.height = parentHeight + 'px';
+        } else {
+          parent.scrollTop = containerHeight + 1; // +1 to account for rounding errors
+        }
+      }, 10);
     }
+  },
+  componentWillUnmount() {
+    clearTimeout(this[timeout]);
   }
 });
