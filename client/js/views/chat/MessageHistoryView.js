@@ -38,6 +38,9 @@ export var MessageHistoryView = React.createClass({
     ]);
   },
   componentDidMount() {
+    if (this[timeout]) {
+      clearTimeout(this[timeout]);
+    }
     if (this.props.lockedToBottom) {
       // I hate this
       this[timeout] = setTimeout(() => {
@@ -53,8 +56,5 @@ export var MessageHistoryView = React.createClass({
         }
       }, 10);
     }
-  },
-  componentWillUnmount() {
-    clearTimeout(this[timeout]);
   }
 });

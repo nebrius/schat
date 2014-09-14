@@ -50,7 +50,6 @@ export class LoginStoreController extends StoreController {
   }
 
   onConnected(data) {
-    this[error] = data.error;
     aggregate();
   }
 

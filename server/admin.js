@@ -22,27 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-var crypto = require('crypto');
 var program = require('commander');
 var prompt = require('prompt');
-var MongoClient = require('mongodb').MongoClient;
 var UserManagement = require('user-management');
-
-var SALT_LENGTH = 64; // Length of the salt, in bytes
-var HASH_LENGTH = 64; // Length of the hash, in bytes
-var HASH_ITERATIONS = 1000; // Number of pbkdf2 iterations
 
 module.exports = function run(argv) {
   program
     .version(require('../package.json').version)
     .option('-c, --create-user', 'Creates a user')
-    .option('-i --initialize', 'Initializes a chat with the given password. The password is NOT stored')
     .parse(argv);
 
   if (program.createUser) {
     createUser();
-  } else if (program.initialize) {
-    initialize();
   } else {
     program.outputHelp();
   }
@@ -103,92 +94,6 @@ module.exports = function run(argv) {
               users.close();
             });
           }
-        });
-      });
-    });
-  }
-
-  function initialize() {
-    var schema = {
-      properties: {
-        password1: {
-          description: 'Enter a password',
-          hidden: true
-        },
-        password2: {
-          description: 'Repeat the password',
-          hidden: true
-        }
-      }
-    };
-
-    prompt.start();
-    prompt.get(schema, function (err, result) {
-      if (err) {
-        console.error(err);
-        process.exit(1);
-      }
-      if (result.password1 != result.password2) {
-        console.error('Passwords do not match');
-        process.exit(1);
-      }
-
-      function generateSalt(cb) {
-        crypto.randomBytes(SALT_LENGTH, cb);
-      }
-
-      function hash(data, salt, cb) {
-        crypto.pbkdf2(data, salt, HASH_ITERATIONS, HASH_LENGTH, function(err, hash) {
-          if (err) {
-            cb(err);
-            return;
-          }
-          cb(null, {
-            salt: salt,
-            hash: hash
-          });
-        });
-      }
-
-      function saltAndHash(data, cb) {
-        generateSalt(function(err, salt) {
-          if (err) {
-            cb(err);
-            return;
-          }
-          hash(data, salt, cb);
-        });
-      }
-
-      // Do stuff
-      saltAndHash(result.password1, function(err, hash) {
-        if (err) {
-          console.error('error hashing password');
-          process.exit(1);
-        }
-        MongoClient.connect('mongodb://localhost:27017/schat', function(err, database) {
-          if (err) {
-            console.error('Could not connect to database');
-            process.exit(1);
-          }
-          database.collection('cipher_check', function(err, col) {
-            if (err) {
-              console.error('Could not fetch the collection');
-              process.exit(1);
-            }
-            var cipher = crypto.createCipher('aes-256-cbc', hash.hash);
-            var encodedMessage = cipher.update('This is the encrypted cipher check');
-            col.insert({
-              salt: hash.salt.toString('base64'),
-              message: encodedMessage.toString('base64')
-            }, { w: 1 }, function(err) {
-              if (err) {
-                console.error('Could not save cipher check');
-                process.exit(1);
-              }
-              process.exit();
-            });
-          });
         });
       });
     });

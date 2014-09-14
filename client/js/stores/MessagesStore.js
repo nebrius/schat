@@ -29,8 +29,6 @@ let messages = Symbol();
 let error = Symbol();
 let lockedToBottom = Symbol();
 
-const ERROR_PERSISTENCE = 2000;
-
 export class MessagesStore extends StoreController {
 
   dispatch(action) {
