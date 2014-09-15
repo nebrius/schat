@@ -36,10 +36,10 @@ export var HeaderView = React.createClass({
         type: 'button',
         onClick: () => {
           dispatch({
-            type: actions.LOGOUT_REQUESTED
+            type: actions.SETTINGS_REQUESTED
           });
         }
-      }, 'Logout')
+      }, 'Settings')
     ]);
   }
 });

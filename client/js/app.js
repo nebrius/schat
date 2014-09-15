@@ -30,6 +30,8 @@ import { DecryptStoreController } from 'store_controllers/DecryptStoreController
 import { DecryptViewController } from 'view_controllers/DecryptViewController';
 import { ChatStoreController } from 'store_controllers/ChatStoreController';
 import { ChatViewController } from 'view_controllers/ChatViewController';
+import { SettingsStoreController } from 'store_controllers/SettingsStoreController';
+import { SettingsViewController } from 'view_controllers/SettingsViewController';
 
 let appLinkController = new AppLinkController();
 
@@ -48,6 +50,12 @@ registerRoute('decrypt', {
 registerRoute('chat', {
   storeController: new ChatStoreController(),
   viewController: new ChatViewController(),
+  linkController: appLinkController
+});
+
+registerRoute('settings', {
+  storeController: new SettingsStoreController(),
+  viewController: new SettingsViewController(),
   linkController: appLinkController
 });
 

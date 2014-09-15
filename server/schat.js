@@ -152,6 +152,36 @@ module.exports = function run(options) {
         });
       });
 
+      socket.on(messages.CHANGE_PASSWORD, function(msg) {
+        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
+          if (err) {
+            socket.emit(messages.CHANGE_PASSWORD_RESPONSE, {
+              success: false,
+              error: errors.SERVER_ERROR
+            });
+            logger.error('Error validating token: ' + err);
+          } else if (!valid) {
+            socket.emit(messages.CHANGE_PASSWORD_RESPONSE, {
+              success: false,
+              error: errors.UNAUTHORIZED
+            });
+          } else {
+            users.changePassword(msg.token, msg.oldPassword, msg.newPassword, function(err) {
+              if (err) {
+                socket.emit(messages.CHANGE_PASSWORD_RESPONSE, {
+                  success: false,
+                  error: err == 'Invalid password' ? errors.INVALID_PASSWORD : errors.SERVER_ERROR
+                });
+              } else {
+                socket.emit(messages.CHANGE_PASSWORD_RESPONSE, {
+                  success: true
+                });
+              }
+            });
+          }
+        });
+      });
+
       socket.on(messages.GET_TEST, function(msg) {
         users.isTokenValid(decodeToken(msg.token), function(err, valid) {
           if (err) {

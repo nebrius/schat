@@ -22,35 +22,57 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregate, route } from 'flvx';
+import { Link, dispatch } from 'flvx';
 import { actions } from 'actions';
+import errors from 'shared/errors';
+import messages from 'shared/messages';
 
-let error = Symbol();
+let socket = Symbol();
+let token = Symbol();
 
-export class LoginStoreController extends StoreController {
-
+export class SettingsLink extends Link {
+  constructor(io) {
+    this[socket] = io;
+  }
   dispatch(action) {
     switch(action.type) {
-      case actions.LOGIN_FAILED:
-        this[error] = action.error;
-        aggregate();
-        break;
       case actions.LOGIN_SUCCEEDED:
-        route('decrypt', {
-          token: action.token
-        });
+        this[token] = action.token;
+        break;
+      case actions.CHANGE_PASSWORD_REQUESTED:
+        if (action.newPassword1 != action.newPassword2) {
+          dispatch({
+            type: actions.CHANGE_PASSWORD_FAILED,
+            error: 'Passwords do not match'
+          });
+        } else if (!action.newPassword1) {
+          dispatch({
+            type: actions.CHANGE_PASSWORD_FAILED,
+            error: 'New password must not be empty'
+          });
+        } else {
+          this[socket].emit(messages.CHANGE_PASSWORD, {
+            token: this[token],
+            oldPassword: action.currentPassword,
+            newPassword: action.newPassword1
+          });
+        }
         break;
     }
   }
-
-  render() {
-    return {
-      error: this[error]
-    };
-  }
-
   onConnected() {
-    aggregate();
+    this[socket].on(messages.AUTH_RESPONSE, (msg) => {
+      if (msg.success) {
+        dispatch({
+          type: actions.LOGIN_SUCCEEDED,
+          token: msg.token
+        });
+      } else {
+        dispatch({
+          type: actions.LOGIN_FAILED,
+          error: msg.error == errors.UNAUTHORIZED ? 'Invalid username or password' : 'Server error'
+        });
+      }
+    });
   }
-
 }

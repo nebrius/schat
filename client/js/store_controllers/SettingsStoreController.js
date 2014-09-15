@@ -22,25 +22,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { LinkController } from 'flvx';
-import { LoginLink } from 'links/LoginLink';
-import { DecryptLink } from 'links/DecryptLink';
-import { ChatLink } from 'links/ChatLink';
-import { SettingsLink } from 'links/SettingsLink';
-import io from 'socketio';
+import { StoreController, aggregate, route } from 'flvx';
+import { actions } from 'actions';
 
-let socket = Symbol();
+let error = Symbol();
+let passwordChanged = Symbol();
 
-export class AppLinkController extends LinkController {
-  onConnected() {
-    if (this[socket]) {
-      return;
+export class SettingsStoreController extends StoreController {
+
+  dispatch(action) {
+    switch(action.type) {
+      case actions.CHANGE_PASSWORD_SUCCEEDED:
+        this[passwordChanged] = true;
+        aggregate();
+        break;
+      case actions.CHANGE_PASSWORD_FAILED:
+        this[error] = action.error;
+        aggregate();
+        break;
+      case actions.CLOSE_SETTINGS:
+        route('chat');
+        break;
     }
-    console.log('Connecting to server');
-    this[socket] = io();
-    this.register(new LoginLink(this[socket]));
-    this.register(new DecryptLink(this[socket]));
-    this.register(new ChatLink(this[socket]));
-    this.register(new SettingsLink(this[socket]));
   }
+
+  render() {
+    return {
+      error: this[error],
+      passwordChanged: this[passwordChanged]
+    };
+  }
+
+  onConnected() {
+    aggregate();
+  }
+
+  onDisconnected() {
+    this[error] = null;
+  }
+
 }

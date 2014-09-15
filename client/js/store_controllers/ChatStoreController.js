@@ -35,6 +35,9 @@ export class ChatStoreController extends StoreController {
       case actions.LOGOUT_SUCCEEDED:
         route('login');
         break;
+      case actions.SETTINGS_REQUESTED:
+        route('settings');
+        break;
     }
   }
 
@@ -43,7 +46,9 @@ export class ChatStoreController extends StoreController {
   }
 
   onConnected() {
-    this.register(this[messages] = new MessagesStore());
+    if (!this[messages]) {
+      this.register(this[messages] = new MessagesStore());
+    }
   }
 
 }
