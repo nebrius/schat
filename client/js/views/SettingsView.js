@@ -37,7 +37,7 @@ export var SettingsView = React.createClass({
           className: 'panel-heading'
         }, React.DOM.h3({
           className: 'panel-title'
-        }, 'Change Password'),
+        }, 'Change Password')),
         React.DOM.form({
           className: 'panel-body',
           onSubmit: (e) => {
@@ -50,7 +50,6 @@ export var SettingsView = React.createClass({
             });
           }
         }, [
-          this.props.passwordChanged ? React.DOM.div({ className: 'alert' }, 'Password Changed Successfully') : null,
           React.DOM.div({
             className: 'form-group'
           }, [
@@ -88,8 +87,32 @@ export var SettingsView = React.createClass({
             type: 'submit',
             className: 'btn btn-danger'
           }, 'Change Password')
-        ]))
+        ])
       ]),
+      !this.props.admin ? null : React.DOM.div({
+        className: 'panel panel-default'
+      }, [
+        React.DOM.div({
+          className: 'panel-heading'
+        }, React.DOM.h3({
+          className: 'panel-title'
+        }, 'Admin Settings')),
+        React.DOM.form({
+          className: 'panel-body',
+          onSubmit: (e) => {
+            e.preventDefault();
+            dispatch({
+              type: actions.CHANGE_PASSWORD_REQUESTED,
+              currentPassword: document.getElementById('currentPassword').value,
+              newPassword1: document.getElementById('newPassword1').value,
+              newPassword2: document.getElementById('newPassword2').value
+            });
+          }
+        }, [
+
+        ])
+      ]),
+
       React.DOM.button({
         className: 'btn',
         onClick: () => {

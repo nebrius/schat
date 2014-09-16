@@ -27,13 +27,14 @@ import { actions } from 'actions';
 
 let error = Symbol();
 let passwordChanged = Symbol();
+let admin = Symbol();
 
 export class SettingsStoreController extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case actions.CHANGE_PASSWORD_SUCCEEDED:
-        this[passwordChanged] = true;
+      case actions.ADMIN_AVAILABLE:
+        this[admin] = action.admin;
         aggregate();
         break;
       case actions.CHANGE_PASSWORD_FAILED:
@@ -49,7 +50,7 @@ export class SettingsStoreController extends StoreController {
   render() {
     return {
       error: this[error],
-      passwordChanged: this[passwordChanged]
+      admin: this[admin]
     };
   }
 

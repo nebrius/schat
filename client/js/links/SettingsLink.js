@@ -29,6 +29,7 @@ import messages from 'shared/messages';
 
 let socket = Symbol();
 let token = Symbol();
+let admin = Symbol();
 
 export class SettingsLink extends Link {
   constructor(io) {
@@ -38,6 +39,15 @@ export class SettingsLink extends Link {
     switch(action.type) {
       case actions.LOGIN_SUCCEEDED:
         this[token] = action.token;
+        this[admin] = action.admin;
+        break;
+      case actions.ROUTED:
+        if (action.route == 'settings') {
+          dispatch({
+            type: actions.ADMIN_AVAILABLE,
+            admin: this[admin]
+          });
+        }
         break;
       case actions.CHANGE_PASSWORD_REQUESTED:
         if (action.newPassword1 != action.newPassword2) {

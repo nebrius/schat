@@ -48,7 +48,8 @@ export class LoginLink extends Link {
       if (msg.success) {
         dispatch({
           type: actions.LOGIN_SUCCEEDED,
-          token: msg.token
+          token: msg.token,
+          admin: msg.admin
         });
       } else {
         dispatch({
