@@ -30,10 +30,16 @@ module.exports = function run(argv) {
   program
     .version(require('../package.json').version)
     .option('-c, --create-user', 'Creates a user')
+    .option('-a, --set-admin-user', 'Sets a user as admin')
+    .option('-r, --set-regular-user', 'Sets a user as a regular user')
     .parse(argv);
 
   if (program.createUser) {
     createUser();
+  } else if (program.setAdminUser) {
+    setAdminUser();
+  } else if (program.setRegularUser) {
+    setRegularUser();
   } else {
     program.outputHelp();
   }
@@ -66,36 +72,89 @@ module.exports = function run(argv) {
       }
       if (result.password1 != result.password2) {
         console.error('Passwords do not match');
-        process.exit(1);
+        return;
       }
       var users = new UserManagement({
         database: 'schat_users'
       });
       users.load(function (err) {
         if (err) {
-          console.error('Error: ' + err);
-          users.close();
-          return;
+          console.error(err);
+          process.exit(1);
         }
         users.userExists(result.username, function(err, exists) {
           if (err) {
-            console.error('Error: ' + err);
-            users.close();
+            console.error(err);
+            process.exit(1);
           } else if (exists) {
             console.log('User already exists');
             users.close();
           } else {
             users.createUser(result.username, result.password1, {}, function (err) {
               if (err) {
-                console.error('Error: ' + err);
-              } else {
-                console.log('User created');
+                console.error(err);
+                process.exit(1);
               }
+              console.log('User created');
               users.close();
             });
           }
         });
       });
     });
+  }
+
+  function setUserStatus(extras, message) {
+    var users = new UserManagement({
+      database: 'schat_users'
+    });
+    users.load(function (err) {
+      if (err) {
+        console.error(err);
+        process.exit(1);
+      }
+      users.getUserList(function(err, userList) {
+        if (err) {
+          console.error(err);
+          process.exit(1);
+        }
+        var schema = {
+          properties: {
+            username: {
+              description: 'Enter a username',
+              message: 'Unknown user',
+              conform: function(value) {
+                return userList.indexOf(value) != -1;
+              },
+              required: true
+            }
+          }
+        };
+
+        prompt.start();
+        prompt.get(schema, function (err, result) {
+          if (err) {
+            console.error(err);
+            process.exit(1);
+          }
+          users.setExtrasForUsername(result.username, extras, function(err) {
+            if (err) {
+              console.error(err);
+              process.exit(1);
+            }
+            console.log(result.username + message);
+            users.close();
+          });
+        });
+      });
+    });
+  }
+
+  function setAdminUser() {
+    setUserStatus({ admin: true }, ' is now an admin');
+  }
+
+  function setRegularUser() {
+    setUserStatus({ admin: false }, ' is now a regular user');
   }
 };

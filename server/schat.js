@@ -113,9 +113,20 @@ module.exports = function run(options) {
               error: errors.UNAUTHORIZED
             });
           } else {
-            socket.emit(messages.AUTH_RESPONSE, {
-              success: true,
-              token: result.token
+            users.getExtrasForToken(result.token, function(err, extras) {
+              if (err) {
+                socket.emit(messages.AUTH_RESPONSE, {
+                  success: false,
+                  error: errors.SERVER_ERROR
+                });
+                logger.error('Error authenticating user: ' + err);
+              } else {
+                socket.emit(messages.AUTH_RESPONSE, {
+                  success: true,
+                  token: result.token,
+                  admin: !!extras.admin
+                });
+              }
             });
           }
         });
