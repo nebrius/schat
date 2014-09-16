@@ -109,12 +109,15 @@ export var SettingsView = React.createClass({
             });
           }
         }, [
-
+          React.DOM.button({
+            type: 'submit',
+            className: 'btn btn-default'
+          }, 'Submit')
         ])
       ]),
 
       React.DOM.button({
-        className: 'btn',
+        className: 'btn btn-primary',
         onClick: () => {
           dispatch({
             type: actions.CLOSE_SETTINGS
