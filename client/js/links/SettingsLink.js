@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { Link, dispatch } from 'flvx';
+import { Link, dispatch, route } from 'flvx';
 import { actions } from 'actions';
 import errors from 'shared/errors';
 import messages from 'shared/messages';
@@ -61,16 +61,13 @@ export class SettingsLink extends Link {
     }
   }
   onConnected() {
-    this[socket].on(messages.AUTH_RESPONSE, (msg) => {
+    this[socket].on(messages.CHANGE_PASSWORD_RESPONSE, (msg) => {
       if (msg.success) {
-        dispatch({
-          type: actions.LOGIN_SUCCEEDED,
-          token: msg.token
-        });
+        route('login');
       } else {
         dispatch({
-          type: actions.LOGIN_FAILED,
-          error: msg.error == errors.UNAUTHORIZED ? 'Invalid username or password' : 'Server error'
+          type: actions.CHANGE_PASSWORD_FAILED,
+          error: msg.error == errors.INVALID_PASSWORD ? 'Invalid current password' : 'Server Error'
         });
       }
     });
