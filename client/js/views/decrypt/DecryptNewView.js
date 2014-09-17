@@ -29,6 +29,7 @@ import { actions } from 'actions';
 export var DecryptNewView = React.createClass({
   render() {
     return React.DOM.form({
+      className: 'padded',
       onSubmit: (e) => {
         e.preventDefault();
         dispatch({

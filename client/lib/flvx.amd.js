@@ -181,6 +181,25 @@ define([], function() {
       route: name
     });
   }
+  var state = {};
+  function getState(property) {
+    return state[$traceurRuntime.toProperty(property)];
+  }
+  function setState(property, value) {
+    $traceurRuntime.setProperty(state, property, value);
+    dispatch({
+      type: 'stateSet',
+      property: property,
+      value: value
+    });
+  }
+  function clearState(property) {
+    delete state[$traceurRuntime.toProperty(property)];
+    dispatch({
+      type: 'stateCleared',
+      property: property
+    });
+  }
   return {
     get StoreController() {
       return StoreController;
@@ -208,6 +227,15 @@ define([], function() {
     },
     get route() {
       return route;
+    },
+    get getState() {
+      return getState;
+    },
+    get setState() {
+      return setState;
+    },
+    get clearState() {
+      return clearState;
     },
     __esModule: true
   };

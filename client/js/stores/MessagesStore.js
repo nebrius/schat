@@ -22,14 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregate } from 'flvx';
+import { Store, aggregate } from 'flvx';
 import { actions } from 'actions';
 
 let messages = Symbol();
 let error = Symbol();
 let lockedToBottom = Symbol();
 
-export class MessagesStore extends StoreController {
+export class MessagesStore extends Store {
 
   dispatch(action) {
     switch(action.type) {
@@ -39,10 +39,6 @@ export class MessagesStore extends StoreController {
         break;
       case actions.ERROR_FETCHING_MESSAGE_BLOCK:
         this[error] = 'Could not fetch messages from server';
-        setTimeout(() => {
-          this[error] = null;
-          aggregate();
-        }, ERROR_PERSISTENCE);
         aggregate();
         break;
       case actions.RECEIVED_NEW_MESSAGE:

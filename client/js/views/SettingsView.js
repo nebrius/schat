@@ -28,7 +28,9 @@ import { actions } from 'actions';
 
 export var SettingsView = React.createClass({
   render() {
-    return React.DOM.div({}, [
+    return React.DOM.div({
+      className: 'settings_container padded'
+    }, React.DOM.div({}, [
       this.props.error ? React.DOM.div({ className: 'alert alert-danger' }, this.props.error) : null,
       React.DOM.div({
         className: 'panel panel-default'
@@ -109,6 +111,28 @@ export var SettingsView = React.createClass({
             });
           }
         }, [
+          React.DOM.div({
+            className: 'form-group'
+          }, [
+            React.DOM.label(null, 'Stay logged in'),
+            React.DOM.input({
+              type: 'checkbox',
+              className: 'form-control',
+              id: 'stayLoggedIn',
+              placeholder: 'Enter new password'
+            })
+          ]),
+          React.DOM.div({
+            className: 'form-group'
+          }, [
+            React.DOM.label(null, 'Flash Tab on New Message'),
+            React.DOM.input({
+              type: 'checkbox',
+              className: 'form-control',
+              id: 'stayLoggedIn',
+              placeholder: 'Enter new password'
+            })
+          ]),
           React.DOM.button({
             type: 'submit',
             className: 'btn btn-default'
@@ -124,6 +148,6 @@ export var SettingsView = React.createClass({
           });
         }
       }, 'Close')
-    ]);
+    ]));
   }
 });
