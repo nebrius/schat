@@ -24,23 +24,9 @@ THE SOFTWARE.
 
 import { LinkController } from 'flvx';
 import { LoginLink } from 'links/LoginLink';
-import { DecryptLink } from 'links/DecryptLink';
-import { ChatLink } from 'links/ChatLink';
-import { SettingsLink } from 'links/SettingsLink';
-import io from 'socketio';
 
-let socket = Symbol();
-
-export class AppLinkController extends LinkController {
+export class LoginLinkController extends LinkController {
   onConnected() {
-    if (this[socket]) {
-      return;
-    }
-    console.log('Connecting to server');
-    this[socket] = io();
-    this.register(new LoginLink(this[socket]));
-    this.register(new DecryptLink(this[socket]));
-    this.register(new ChatLink(this[socket]));
-    this.register(new SettingsLink(this[socket]));
+    this.register(new LoginLink());
   }
 }

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { Link, dispatch } from 'flvx';
+import { Link, dispatch, getGlobalData } from 'flvx';
 import { actions } from 'actions';
 import { decrypt, encrypt } from 'util';
 import errors from 'shared/errors';
@@ -33,24 +33,12 @@ const TEST_MESSAGE = 'No one would have believed in the last years of the ninete
   ' themselves about their various concerns they were scrutinised and studied, perhaps almost as narrowly as a man' +
   ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.';
 
-let socket = Symbol();
-let token = Symbol();
 let test = Symbol();
-let password = Symbol();
 
 export class DecryptLink extends Link {
-  constructor(io) {
-    this[socket] = io;
-  }
   dispatch(action) {
+    let socket = getGlobalData().socket;
     switch(action.type) {
-      case actions.LOGIN_SUCCEEDED:
-        this[token] = action.token;
-        this[socket].emit(messages.GET_TEST, {
-          token: this[token]
-        });
-        break;
-
       case actions.DECRYPTION_PASSWORD_SUBMITTED:
         let decrypted = decrypt(this[test].message, action.password, this[test].salt);
         if (decrypted === TEST_MESSAGE) {
@@ -78,18 +66,22 @@ export class DecryptLink extends Link {
             error: 'Passwords must not be empty'
           });
         } else {
-          let encrypted = encrypt(TEST_MESSAGE, this[password] = action.password1);
+          let encrypted = encrypt(TEST_MESSAGE, getGlobalData().password);
           this[socket].emit(messages.SET_TEST, {
             salt: encrypted.salt,
             message: encrypted.message,
-            token: this[token]
+            token: getGlobalData().token
           });
         }
         break;
     }
   }
   onConnected() {
-    this[socket].on(messages.GET_TEST_RESPONSE, (msg) => {
+    let socket = getGlobalData().socket;
+    socket.emit(messages.GET_TEST, {
+      token: getGlobalData().token
+    });
+    socket.on(messages.GET_TEST_RESPONSE, (msg) => {
       if (msg.success) {
         let { message: message, salt: salt } = msg;
         this[test] = {
@@ -110,11 +102,11 @@ export class DecryptLink extends Link {
         });
       }
     });
-    this[socket].on(messages.SET_TEST_RESPONSE, (msg) => {
+    socket.on(messages.SET_TEST_RESPONSE, (msg) => {
       if (msg.success) {
         dispatch({
           type: actions.DECRYPTION_SUCCEEDED,
-          password: this[password]
+          password: getGlobalData().password
         });
       } else {
         dispatch({

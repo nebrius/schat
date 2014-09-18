@@ -26,8 +26,6 @@ var path = require('path');
 var MongoClient = require('mongodb').MongoClient;
 var Logger = require('transport-logger');
 var UserManagement = require('user-management');
-var express = require('express');
-var bodyParser = require('body-parser');
 var socketio = require('socket.io');
 var http = require('http');
 var errors = require('../shared/errors');
@@ -82,10 +80,7 @@ module.exports = function run(options) {
   function start() {
 
     // Create the server
-    var app = express();
-    app.use('/', express.static(path.join(__dirname, '..', 'client-dist')));
-    app.use(bodyParser.urlencoded({ extended: false }));
-    var server = http.Server(app);
+    var server = http.Server();
     var io = socketio(server);
 
     // The various URI encoding/decoding that goes on with tokens results in a slight mangling of the token
@@ -124,7 +119,7 @@ module.exports = function run(options) {
                 socket.emit(messages.AUTH_RESPONSE, {
                   success: true,
                   token: result.token,
-                  admin: !!extras.admin
+                  extras: extras
                 });
               }
             });

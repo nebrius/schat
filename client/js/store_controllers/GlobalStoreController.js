@@ -22,46 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { Link, dispatch, getGlobalData, route } from 'flvx';
+import { StoreController } from 'flvx';
 import { actions } from 'actions';
-import errors from 'shared/errors';
-import messages from 'shared/messages';
 
-export class SettingsLink extends Link {
+let data = Symbol();
+
+export class GlobalStoreController extends StoreController {
+
   dispatch(action) {
     switch(action.type) {
-      case actions.CHANGE_PASSWORD_REQUESTED:
-        if (action.newPassword1 != action.newPassword2) {
-          dispatch({
-            type: actions.CHANGE_PASSWORD_FAILED,
-            error: 'Passwords do not match'
-          });
-        } else if (!action.newPassword1) {
-          dispatch({
-            type: actions.CHANGE_PASSWORD_FAILED,
-            error: 'New password must not be empty'
-          });
-        } else {
-          let { socket: socket, token: token } = getGlobalData();
-          socket.emit(messages.CHANGE_PASSWORD, {
-            token: token,
-            oldPassword: action.currentPassword,
-            newPassword: action.newPassword1
-          });
-        }
+      case actions.SOCKET_CREATED:
+        this[data].socket = action.socket;
+        break;
+      case actions.LOGIN_SUBMITTED:
+        this[data].username = action.username;
+        break;
+      case actions.LOGIN_SUCCEEDED:
+        this[data].token = action.token;
+        this[data].extras = action.extras;
+        break;
+      case actions.DECRYPTION_SUCCEEDED:
+        this[data].password = action.password;
         break;
     }
   }
+
+  render() {
+    return this[data];
+  }
+
   onConnected() {
-    getGlobalData().socket.on(messages.CHANGE_PASSWORD_RESPONSE, (msg) => {
-      if (msg.success) {
-        route('login');
-      } else {
-        dispatch({
-          type: actions.CHANGE_PASSWORD_FAILED,
-          error: msg.error == errors.INVALID_PASSWORD ? 'Invalid current password' : 'Server Error'
-        });
-      }
-    });
+    this[data] = {};
   }
 }

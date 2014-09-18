@@ -36,9 +36,7 @@ export class LoginStoreController extends StoreController {
         aggregate();
         break;
       case actions.LOGIN_SUCCEEDED:
-        route('decrypt', {
-          token: action.token
-        });
+        route('decrypt');
         break;
     }
   }

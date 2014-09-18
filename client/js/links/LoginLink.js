@@ -22,21 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { Link, dispatch } from 'flvx';
+import { Link, dispatch, getGlobalData } from 'flvx';
 import { actions } from 'actions';
 import errors from 'shared/errors';
 import messages from 'shared/messages';
 
-let socket = Symbol();
-
 export class LoginLink extends Link {
-  constructor(io) {
-    this[socket] = io;
-  }
   dispatch(action) {
     switch(action.type) {
       case actions.LOGIN_SUBMITTED:
-        this[socket].emit(messages.AUTH, {
+        getGlobalData().socket.emit(messages.AUTH, {
           username: action.username,
           password: action.password
         });
@@ -44,12 +39,12 @@ export class LoginLink extends Link {
     }
   }
   onConnected() {
-    this[socket].on(messages.AUTH_RESPONSE, (msg) => {
+    getGlobalData().socket.on(messages.AUTH_RESPONSE, (msg) => {
       if (msg.success) {
         dispatch({
           type: actions.LOGIN_SUCCEEDED,
           token: msg.token,
-          admin: msg.admin
+          extras: msg.extras
         });
       } else {
         dispatch({

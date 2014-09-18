@@ -22,43 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { StoreController, aggregate, route } from 'flvx';
-import { actions } from 'actions';
+import { LinkController } from 'flvx';
+import { SettingsLink } from 'links/SettingsLink';
 
-let error = Symbol();
-let admin = Symbol();
-
-export class SettingsStoreController extends StoreController {
-
-  dispatch(action) {
-    switch(action.type) {
-      case actions.ADMIN_AVAILABLE:
-        this[admin] = action.admin;
-        aggregate();
-        break;
-      case actions.CHANGE_PASSWORD_FAILED:
-        this[error] = action.error;
-        aggregate();
-        break;
-      case actions.CLOSE_SETTINGS:
-        route('chat');
-        break;
-    }
-  }
-
-  render() {
-    return {
-      error: this[error],
-      admin: this[admin]
-    };
-  }
-
+export class SettingsLinkController extends LinkController {
   onConnected() {
-    aggregate();
+    this.register(new SettingsLink());
   }
-
-  onDisconnected() {
-    this[error] = null;
-  }
-
 }
