@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 var gulp = require('gulp');
 var traceur = require('gulp-traceur');
+var sourcemaps = require('gulp-sourcemaps');
+var concat = require('gulp-concat');
 var del = require('del');
 
 gulp.task('default', ['clean'], function() {
@@ -47,10 +49,12 @@ gulp.task('css', function() {
 
 gulp.task('js', function() {
   return gulp.src('client/js/**/*')
-    .pipe(traceur({
-      experimental: true,
-      modules: 'amd'
-    }))
+    .pipe(sourcemaps.init())
+      .pipe(traceur({
+        experimental: true,
+        modules: 'amd'
+      }))
+    .pipe(sourcemaps.write('../maps'))
     .pipe(gulp.dest('client-dist/js'));
 });
 
