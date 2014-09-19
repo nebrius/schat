@@ -17,23 +17,19 @@
     "encryption"
   ],
   "dependencies": {
-    "body-parser": "^1.6.5",
     "commander": "^2.3.0",
-    "express": "4.7.x",
     "mongodb": "^1.4.8",
     "prompt": "^0.2.13",
     "socket.io": "^1.0.6",
     "transport-logger": "0.1.x",
-    "user-management": "^1.0.2"
+    "user-management": "^1.0.3"
   },
   "author": "Bryan Hughes <bryan@theoreticalideations.com>",
   "license": "MIT",
   "devDependencies": {
     "del": "^0.1.2",
     "gulp": "^3.8.7",
-    "gulp-react": "^1.0.0",
     "gulp-traceur": "^0.13.0",
-    "gulp-concat": "^2.4.1",
     "gulp-sourcemaps": "^1.1.5"
   }
 }

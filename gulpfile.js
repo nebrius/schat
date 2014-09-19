@@ -25,11 +25,12 @@ THE SOFTWARE.
 var gulp = require('gulp');
 var traceur = require('gulp-traceur');
 var sourcemaps = require('gulp-sourcemaps');
-var concat = require('gulp-concat');
 var del = require('del');
 
+var FLUX_LIBRARY = 'flvx.amd.js';
+
 gulp.task('default', ['clean'], function() {
-  return gulp.start(['index.html', 'libs', 'shared', 'css', 'js']);
+  return gulp.start(['index.html', 'flvx', 'flvx-map', 'libs', 'lib-maps', 'shared', 'css', 'js']);
 });
 
 gulp.task('index.html', function() {
@@ -37,9 +38,24 @@ gulp.task('index.html', function() {
     .pipe(gulp.dest('client-dist'));
 });
 
-gulp.task('libs', function() {
+gulp.task('flvx', function() {
+  return gulp.src('../flvx/dist/' + FLUX_LIBRARY)
+    .pipe(gulp.dest('client/lib'));
+});
+
+gulp.task('flvx-map', function() {
+  return gulp.src('../flvx/dist/maps/' + FLUX_LIBRARY + '.map')
+    .pipe(gulp.dest('client/lib/maps'));
+});
+
+gulp.task('libs', ['flvx'], function() {
   return gulp.src('client/lib/*')
     .pipe(gulp.dest('client-dist/lib'));
+});
+
+gulp.task('lib-maps', ['flvx-map'], function() {
+  return gulp.src('client/lib/maps/*')
+    .pipe(gulp.dest('client-dist/lib/maps'));
 });
 
 gulp.task('css', function() {
@@ -64,5 +80,5 @@ gulp.task('shared', function() {
 });
 
 gulp.task('clean', function(cb) {
-  del(['client-dist'], cb);
+  del(['client-dist', 'client/lib/' + FLUX_LIBRARY, 'client/lib/maps/' + FLUX_LIBRARY + '.map'], cb);
 });
