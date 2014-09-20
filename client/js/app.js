@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { registerRoute, registerGlobalStoreController, dispatch, route } from 'flvx';
+import { registerRoute, registerGlobalStoreController, getGlobalData, dispatch, route } from 'flvx';
 import { GlobalStoreController } from 'store_controllers/GlobalStoreController';
 
 import { LoginLinkController } from 'link_controllers/LoginLinkController';
@@ -77,4 +77,9 @@ registerRoute('settings', {
   linkController: new SettingsLinkController()
 });
 
-route('login');
+let extras = getGlobalData().extras;
+if (extras && extras.persistLogin) {
+  route('decrypt');
+} else {
+  route('login');
+}

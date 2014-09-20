@@ -91,54 +91,6 @@ export var SettingsView = React.createClass({
           }, 'Change Password')
         ])
       ]),
-      !this.props.admin ? null : React.DOM.div({
-        className: 'panel panel-default'
-      }, [
-        React.DOM.div({
-          className: 'panel-heading'
-        }, React.DOM.h3({
-          className: 'panel-title'
-        }, 'Admin Settings')),
-        React.DOM.form({
-          className: 'panel-body',
-          onSubmit: (e) => {
-            e.preventDefault();
-            dispatch({
-              type: actions.CHANGE_PASSWORD_REQUESTED,
-              currentPassword: document.getElementById('currentPassword').value,
-              newPassword1: document.getElementById('newPassword1').value,
-              newPassword2: document.getElementById('newPassword2').value
-            });
-          }
-        }, [
-          React.DOM.div({
-            className: 'form-group'
-          }, [
-            React.DOM.label(null, 'Stay logged in'),
-            React.DOM.input({
-              type: 'checkbox',
-              className: 'form-control',
-              id: 'stayLoggedIn',
-              placeholder: 'Enter new password'
-            })
-          ]),
-          React.DOM.div({
-            className: 'form-group'
-          }, [
-            React.DOM.label(null, 'Flash Tab on New Message'),
-            React.DOM.input({
-              type: 'checkbox',
-              className: 'form-control',
-              id: 'stayLoggedIn',
-              placeholder: 'Enter new password'
-            })
-          ]),
-          React.DOM.button({
-            type: 'submit',
-            className: 'btn btn-default'
-          }, 'Submit')
-        ])
-      ]),
 
       React.DOM.button({
         className: 'btn btn-primary',

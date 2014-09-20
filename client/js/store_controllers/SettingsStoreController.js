@@ -26,16 +26,11 @@ import { StoreController, aggregate, route } from 'flvx';
 import { actions } from 'actions';
 
 let error = Symbol();
-let admin = Symbol();
 
 export class SettingsStoreController extends StoreController {
 
   dispatch(action) {
     switch(action.type) {
-      case actions.ADMIN_AVAILABLE:
-        this[admin] = action.admin;
-        aggregate();
-        break;
       case actions.CHANGE_PASSWORD_FAILED:
         this[error] = action.error;
         aggregate();
@@ -48,8 +43,7 @@ export class SettingsStoreController extends StoreController {
 
   render() {
     return {
-      error: this[error],
-      admin: this[admin]
+      error: this[error]
     };
   }
 

@@ -29,15 +29,6 @@ let timeout = Symbol();
 
 export var MessageHistoryView = React.createClass({
   render() {
-    return React.DOM.div({
-      className: 'message_history_view'
-    }, [
-      React.DOM.div({
-        className: 'message_history_view_container'
-      }, this.props.messages.map((message) => new MessageView(message)))
-    ]);
-  },
-  componentDidMount() {
     if (this[timeout]) {
       clearTimeout(this[timeout]);
     }
@@ -49,12 +40,16 @@ export var MessageHistoryView = React.createClass({
         let container = parent.children[0];
         let parentHeight = parseInt(window.getComputedStyle(parent).height);
         let containerHeight = parseInt(window.getComputedStyle(container).height);
-        if (parentHeight > containerHeight) {
-          container.style.height = parentHeight + 'px';
-        } else {
-          parent.scrollTop = containerHeight + 1; // +1 to account for rounding errors
-        }
+        container.style.minHeight = parentHeight + 'px';
+        parent.scrollTop = containerHeight + 1; // +1 to account for rounding errors
       }, 10);
     }
+    return React.DOM.div({
+      className: 'message_history_view'
+    }, [
+      React.DOM.div({
+        className: 'message_history_view_container',
+      }, this.props.messages.map((message) => new MessageView(message)))
+    ]);
   }
 });

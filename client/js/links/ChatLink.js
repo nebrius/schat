@@ -31,7 +31,7 @@ const MESSAGE_WINDOW_SIZE = 100;
 
 export class ChatLink extends Link {
   dispatch(action) {
-    let socket = getGlobalData().socket;
+    let { socket: socket, password: password } = getGlobalData();
     switch(action.type) {
       case actions.LOGOUT_REQUESTED:
         socket.emit(messages.LOGOUT, {
@@ -39,7 +39,7 @@ export class ChatLink extends Link {
         });
         break;
       case actions.MESSAGE_SUBMITTED:
-        let { salt: salt, message: message } = encrypt(action.message, this[password]);
+        let { salt: salt, message: message } = encrypt(action.message, password);
         socket.emit(messages.SUBMIT_NEW_MESSAGE, {
           token: getGlobalData().token,
           salt: salt,

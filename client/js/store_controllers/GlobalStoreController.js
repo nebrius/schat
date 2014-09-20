@@ -40,6 +40,15 @@ export class GlobalStoreController extends StoreController {
       case actions.LOGIN_SUCCEEDED:
         this[data].token = action.token;
         this[data].extras = action.extras;
+        if (this[data].extras.persistLogin && !localStorage.getItem('extras').persistLogin) {
+          localStorage.setItem('username', this[data].username);
+          localStorage.setItem('token', this[data].token);
+          localStorage.setItem('extras', this[data].extras);
+        } else {
+          localStorage.setItem('username', null);
+          localStorage.setItem('token', null);
+          localStorage.setItem('extras', null);
+        }
         break;
       case actions.DECRYPTION_SUCCEEDED:
         this[data].password = action.password;
@@ -52,6 +61,15 @@ export class GlobalStoreController extends StoreController {
   }
 
   onConnected() {
-    this[data] = {};
+    let extras = localStorage.getItem('extras');
+    if (extras && extras.persistLogin) {
+      this[data] = {
+        username: localStorage.getItem('username'),
+        token: localStorage.getItem('token'),
+        extras: extras
+      };
+    } else {
+      this[data] = {};
+    }
   }
 }
