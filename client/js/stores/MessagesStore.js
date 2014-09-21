@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { Store, aggregate } from 'flvx';
+import { Store, aggregate, getGlobalData } from 'flvx';
 import { actions } from 'actions';
 
+let titleChange = Symbol();
 let messages = Symbol();
 let error = Symbol();
 let lockedToBottom = Symbol();
@@ -43,6 +44,16 @@ export class MessagesStore extends Store {
         break;
       case actions.RECEIVED_NEW_MESSAGE:
         this[messages].unshift(action.message);
+        if (getGlobalData().admin) {
+          if (this[titleChange]) {
+            clearTimeout(this[titleChange]);
+          }
+          document.title = 'New Message';
+          this[titleChange] = setTimeout(() => {
+            this[titleChange] = null;
+            document.title = 'SChat';
+          }, 2000);
+        }
         aggregate();
         break;
     }

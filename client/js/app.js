@@ -78,7 +78,7 @@ registerRoute('settings', {
 });
 
 let extras = getGlobalData().extras;
-if (extras && extras.persistLogin) {
+if (extras && extras.admin) {
   route('decrypt');
 } else {
   route('login');
