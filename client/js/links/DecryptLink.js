@@ -34,6 +34,7 @@ const TEST_MESSAGE = 'No one would have believed in the last years of the ninete
   ' with a microscope might scrutinise the transient creatures that swarm and multiply in a drop of water.';
 
 let test = Symbol();
+let password = Symbol();
 
 export class DecryptLink extends Link {
   dispatch(action) {
@@ -66,8 +67,9 @@ export class DecryptLink extends Link {
             error: 'Passwords must not be empty'
           });
         } else {
-          let encrypted = encrypt(TEST_MESSAGE, getGlobalData().password);
-          this[socket].emit(messages.SET_TEST, {
+          let encrypted = encrypt(TEST_MESSAGE, action.password1);
+          this[password] = action.password1;
+          socket.emit(messages.SET_TEST, {
             salt: encrypted.salt,
             message: encrypted.message,
             token: getGlobalData().token
@@ -106,7 +108,7 @@ export class DecryptLink extends Link {
       if (msg.success) {
         dispatch({
           type: actions.DECRYPTION_SUCCEEDED,
-          password: getGlobalData().password
+          password: this[password]
         });
       } else {
         dispatch({
