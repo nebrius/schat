@@ -35,7 +35,7 @@ export var MessageView = React.createClass({
       }, [
         React.DOM.span({
           className: 'message_view_name'
-        }, this.props.name),
+        }, this.props.name[0].toUpperCase() + this.props.name.slice(1)),
         React.DOM.div({
           className: 'message_view_time'
         }, formatTime(this.props.time))
