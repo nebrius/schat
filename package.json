@@ -8,10 +8,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab.theoreticalideations.com:nebrius/schat.git"
+    "url": "https://github.com/bryan-m-hughes/schat.git"
   },
-  "homepage": "https://gitlab.theoreticalideations.com/nebrius/schat/tree/master",
-  "issues": "https://gitlab.theoreticalideations.com/nebrius/schat/issues",
+  "homepage": "https://github.com/bryan-m-hughes/schat",
+  "issues": "https://github.com/bryan-m-hughes/schat/issues"
   "keywords": [
     "chat",
     "encryption"
