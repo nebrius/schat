@@ -63,6 +63,11 @@ gulp.task('css', function() {
     .pipe(gulp.dest('client-dist/css'));
 });
 
+gulp.task('images', function() {
+  return gulp.src('client/images/*')
+    .pipe(gulp.dest('client-dist/images'));
+});
+
 gulp.task('js', function() {
   return gulp.src('client/js/**/*')
     .pipe(sourcemaps.init())
