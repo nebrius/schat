@@ -30,7 +30,7 @@ var del = require('del');
 var FLUX_LIBRARY = 'flvx.amd.js';
 
 gulp.task('default', ['clean'], function() {
-  return gulp.start(['index.html', 'flvx', 'flvx-map', 'libs', 'lib-maps', 'shared', 'css', 'js']);
+  return gulp.start(['index.html', 'flvx', 'flvx-map', 'libs', 'lib-maps', 'shared', 'css', 'images', 'js']);
 });
 
 gulp.task('index.html', function() {
