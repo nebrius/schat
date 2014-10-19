@@ -17,7 +17,9 @@
     "encryption"
   ],
   "dependencies": {
+    "body-parser": "^1.9.0",
     "commander": "^2.3.0",
+    "express": "^4.9.8",
     "mongodb": "^1.4.8",
     "prompt": "^0.2.13",
     "socket.io": "^1.0.6",

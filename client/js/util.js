@@ -48,6 +48,31 @@ export function decrypt(message, password, salt) {
   return CryptoJS.enc.Latin1.stringify(CryptoJS.AES.decrypt(message, hash));
 }
 
+export function get(url, cb) {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = () => {
+    cb(null, JSON.parse(xhr.responseText));
+  };
+  xhr.onerror = (e) => {
+    cb(e);
+  };
+  xhr.open('get', url, true);
+  xhr.send();
+}
+
+export function post(url, params, cb) {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = () => {
+    cb(null, JSON.parse(xhr.responseText));
+  };
+  xhr.onerror = (e) => {
+    cb(e);
+  };
+  xhr.open('post', url, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.send(JSON.stringify(params));
+}
+
 export function formatTime(timestamp) {
   let now = new Date();
   let time = new Date(timestamp);

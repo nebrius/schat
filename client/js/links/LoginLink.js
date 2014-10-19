@@ -23,35 +23,37 @@ THE SOFTWARE.
 */
 
 import { Link, dispatch, getGlobalData } from 'flvx';
+import { post } from 'util';
 import { actions } from 'actions';
 import errors from 'shared/errors';
-import messages from 'shared/messages';
 
 export class LoginLink extends Link {
   dispatch(action) {
     switch(action.type) {
       case actions.LOGIN_SUBMITTED:
-        getGlobalData().socket.emit(messages.AUTH, {
+        post('api/login', {
           username: action.username,
           password: action.password
+        }, (err, msg) => {
+          if (err) {
+            dispatch({
+              type: actions.LOGIN_FAILED,
+              error: 'Connection error'
+            });
+          } else if (msg.success) {
+            dispatch({
+              type: actions.LOGIN_SUCCEEDED,
+              token: msg.token,
+              extras: msg.extras
+            });
+          } else {
+            dispatch({
+              type: actions.LOGIN_FAILED,
+              error: msg.error == errors.UNAUTHORIZED ? 'Invalid username or password' : 'Server error'
+            });
+          }
         });
         break;
     }
-  }
-  onConnected() {
-    getGlobalData().socket.on(messages.AUTH_RESPONSE, (msg) => {
-      if (msg.success) {
-        dispatch({
-          type: actions.LOGIN_SUCCEEDED,
-          token: msg.token,
-          extras: msg.extras
-        });
-      } else {
-        dispatch({
-          type: actions.LOGIN_FAILED,
-          error: msg.error == errors.UNAUTHORIZED ? 'Invalid username or password' : 'Server error'
-        });
-      }
-    });
   }
 }

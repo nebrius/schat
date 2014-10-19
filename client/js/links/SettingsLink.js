@@ -25,7 +25,6 @@ THE SOFTWARE.
 import { Link, dispatch, getGlobalData, route } from 'flvx';
 import { actions } from 'actions';
 import errors from 'shared/errors';
-import messages from 'shared/messages';
 
 export class SettingsLink extends Link {
   dispatch(action) {

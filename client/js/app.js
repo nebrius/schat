@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { registerRoute, registerGlobalStoreController, getGlobalData, dispatch, route } from 'flvx';
+import { registerRoute, registerGlobalStoreController, getGlobalData, route } from 'flvx';
 import { GlobalStoreController } from 'store_controllers/GlobalStoreController';
 
 import { LoginLinkController } from 'link_controllers/LoginLinkController';
@@ -41,17 +41,7 @@ import { SettingsLinkController } from 'link_controllers/SettingsLinkController'
 import { SettingsStoreController } from 'store_controllers/SettingsStoreController';
 import { SettingsViewController } from 'view_controllers/SettingsViewController';
 
-import { actions } from 'actions';
-import io from 'socketio';
-
 registerGlobalStoreController(new GlobalStoreController());
-
-console.log('Connecting to server');
-let socket = io();
-dispatch({
-  type: actions.SOCKET_CREATED,
-  socket: socket
-});
 
 registerRoute('login', {
   storeController: new LoginStoreController(),

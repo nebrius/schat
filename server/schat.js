@@ -26,10 +26,10 @@ var path = require('path');
 var MongoClient = require('mongodb').MongoClient;
 var Logger = require('transport-logger');
 var UserManagement = require('user-management');
-var socketio = require('socket.io');
+var express = require('express');
+var bodyParser = require('body-parser');
 var http = require('http');
 var errors = require('../shared/errors');
-var messages = require('../shared/messages');
 
 module.exports = function run(options) {
 
@@ -79,52 +79,51 @@ module.exports = function run(options) {
   // Start the server
   function start() {
 
-    // Create the server
-    var server = http.Server();
-    var io = socketio(server);
+    var app = express();
+    app.use(bodyParser.json());
 
     // The various URI encoding/decoding that goes on with tokens results in a slight mangling of the token
     function decodeToken(token) {
       return decodeURIComponent(token).replace(/\s/g, '+');
     }
 
-    io.on('connection', function(socket) {
-      socket.on('disconnect', function(msg) {
+    app.post('/api/login', function (req, res) {
+      var username = req.body.username;
+      var password = req.body.password;
+      users.authenticateUser(username, password, function(err, result) {
+        if (err) {
+          res.send({
+            success: false,
+            error: errors.SERVER_ERROR
+          });
+          logger.error('Error authenticating user: ' + err);
+        } else if (!result.userExists || !result.passwordsMatch) {
+          res.send({
+            success: false,
+            error: errors.UNAUTHORIZED
+          });
+        } else {
+          users.getExtrasForToken(result.token, function(err, extras) {
+            if (err) {
+              res.send({
+                success: false,
+                error: errors.SERVER_ERROR
+              });
+              logger.error('Error authenticating user: ' + err);
+            } else {
+              res.send({
+                success: true,
+                token: result.token,
+                extras: extras
+              });
+            }
+          });
+        }
       });
+    });
 
-      socket.on(messages.AUTH, function(msg) {
-        var username = msg.username;
-        var password = msg.password;
-        users.authenticateUser(username, password, function(err, result) {
-          if (err) {
-            socket.emit(messages.AUTH_RESPONSE, {
-              success: false,
-              error: errors.SERVER_ERROR
-            });
-            logger.error('Error authenticating user: ' + err);
-          } else if (!result.userExists || !result.passwordsMatch) {
-            socket.emit(messages.AUTH_RESPONSE, {
-              success: false,
-              error: errors.UNAUTHORIZED
-            });
-          } else {
-            users.getExtrasForToken(result.token, function(err, extras) {
-              if (err) {
-                socket.emit(messages.AUTH_RESPONSE, {
-                  success: false,
-                  error: errors.SERVER_ERROR
-                });
-                logger.error('Error authenticating user: ' + err);
-              } else {
-                socket.emit(messages.AUTH_RESPONSE, {
-                  success: true,
-                  token: result.token,
-                  extras: extras
-                });
-              }
-            });
-          }
-        });
+      /*socket.on(messages.AUTH, function(msg) {
+
       });
 
       socket.on(messages.LOGOUT, function(msg) {
@@ -369,11 +368,11 @@ module.exports = function run(options) {
           }
         });
       });
-    });
+    });*/
 
     // Start the server
-    server.listen(options.port, '127.0.0.1', function() {
-      logger.info('Server listening on port ' + options.port);
+    var server = app.listen(options.port, '127.0.0.1', function() {
+      logger.info('Server listening on port ' + server.address().port);
     });
   }
 

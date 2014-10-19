@@ -26,7 +26,6 @@ import { Link, dispatch, getGlobalData } from 'flvx';
 import { actions } from 'actions';
 import { decrypt, encrypt } from 'util';
 import errors from 'shared/errors';
-import messages from 'shared/messages';
 
 const TEST_MESSAGE = 'No one would have believed in the last years of the nineteenth century that this world was being' +
   ' watched keenly and closely by intelligences greater than man\'s and yet as mortal as his own; that as men busied' +

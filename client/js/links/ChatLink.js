@@ -25,7 +25,6 @@ THE SOFTWARE.
 import { Link, dispatch, getGlobalData } from 'flvx';
 import { actions } from 'actions';
 import { encrypt, decrypt } from 'util';
-import messages from 'shared/messages';
 
 const MESSAGE_WINDOW_SIZE = 100;
 
