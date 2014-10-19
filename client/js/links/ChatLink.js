@@ -59,17 +59,18 @@ export class ChatLink extends Link {
     }
   }
   onConnected() {
+    var lastMessage;
     function update() {
       get('/api/messages/', {
         token: getGlobalData().token,
-        start: 0,
-        count: MESSAGE_WINDOW_SIZE
+        lastMessage: lastMessage
       }, (err, msg) => {
         if (err || !msg.success) {
           dispatch({
             type: actions.ERROR_FETCHING_MESSAGE_BLOCK
           });
-        } else if (msg.success) {
+        } else if (msg.success && msg.messages.length) {
+          lastMessage = msg.messages[0].time;
           dispatch({
             type: actions.RECEIVED_MESSAGE_BLOCK,
             messages: msg.messages.map(decryptMessage)

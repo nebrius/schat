@@ -60,7 +60,7 @@ export function get(url, params, cb) {
   xhr.onerror = (e) => {
     cb(e);
   };
-  url += '?' + Object.keys(params).map((param) => param + '=' + params[param]).join('&');
+  url += '?' + Object.keys(params).map((param) => params[param] ? param + '=' + params[param] : '').join('&');
   xhr.open('get', url, true);
   xhr.send();
 }

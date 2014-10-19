@@ -35,20 +35,8 @@ export class MessagesStore extends Store {
   dispatch(action) {
     switch(action.type) {
       case actions.RECEIVED_MESSAGE_BLOCK:
-        let oldMessages = this[messages];
-        let newMessages = action.messages;
-        if (!oldMessages || oldMessages.length != newMessages.length) {
-          let lastOldMessage = oldMessages[0];
-          let lastNewMessage = newMessages[0];
-          if (!lastOldMessage || lastOldMessage.message != lastNewMessage.message ||
-            lastOldMessage.name != lastNewMessage.name ||
-            lastOldMessage.time != lastNewMessage.time ||
-            lastOldMessage.isUser != lastNewMessage.isUser
-          ) {
-            this[messages] = action.messages;
-            aggregate();
-          }
-        }
+        this[messages].unshift.apply(this[messages], action.messages);
+        aggregate();
         break;
       case actions.ERROR_FETCHING_MESSAGE_BLOCK:
         this[error] = 'Could not fetch messages from server';

@@ -28,7 +28,8 @@ import { formatTime } from 'util';
 export var MessageView = React.createClass({
   render() {
     return React.DOM.div({
-      className: 'message_view ' + (this.props.isUser ? 'message_view_user' : 'message_view_other')
+      className: 'message_view ' + (this.props.isUser ? 'message_view_user' : 'message_view_other'),
+      key: this.props._id
     }, [
       React.DOM.div({
         className: 'message_view_header'

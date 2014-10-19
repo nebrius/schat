@@ -311,15 +311,13 @@ module.exports = function run(options) {
             error: errors.UNAUTHORIZED
           });
         } else {
-          var count = parseInt(req.query.count);
-          if (isNaN(count)) {
-            count = 100;
+          var criteria = {};
+          if (req.query.lastMessage) {
+            criteria.time = {
+              $gt: parseInt(req.query.lastMessage)
+            };
           }
-          var start = parseInt(req.query.start);
-          if (isNaN(start)) {
-            start = 0;
-          }
-          collection.find({}, { _id: false }).sort({ time: -1 }).limit(count).skip(start).toArray(function(err, msgs) {
+          collection.find(criteria).sort({ time: -1 }).limit(100).toArray(function(err, msgs) {
             if (err) {
               res.send({
                 success: false,
