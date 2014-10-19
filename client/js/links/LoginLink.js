@@ -31,7 +31,7 @@ export class LoginLink extends Link {
   dispatch(action) {
     switch(action.type) {
       case actions.LOGIN_SUBMITTED:
-        post('api/login', {
+        post('/api/login/', {
           username: action.username,
           password: action.password
         }, (err, msg) => {

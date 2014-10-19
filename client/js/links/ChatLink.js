@@ -24,76 +24,60 @@ THE SOFTWARE.
 
 import { Link, dispatch, getGlobalData } from 'flvx';
 import { actions } from 'actions';
-import { encrypt, decrypt } from 'util';
+import { encrypt, decrypt, post, get } from 'util';
 
 const MESSAGE_WINDOW_SIZE = 100;
 
+let decryptMessage = (msg) => {
+  let { username: username, password: password} = getGlobalData();
+  msg.isUser = msg.name == username;
+  msg.message = decrypt(msg.message, password, msg.salt);
+  delete msg.salt;
+  return msg;
+}
+
 export class ChatLink extends Link {
-  dispatch(action) {
-    let { socket: socket, password: password } = getGlobalData();
+  dispatch(action) {;
     switch(action.type) {
-      case actions.LOGOUT_REQUESTED:
-        socket.emit(messages.LOGOUT, {
-          token: getGlobalData().token
-        });
-        break;
       case actions.MESSAGE_SUBMITTED:
-        let { salt: salt, message: message } = encrypt(action.message, password);
-        socket.emit(messages.SUBMIT_NEW_MESSAGE, {
+        let { salt: salt, message: message } = encrypt(action.message, getGlobalData().password);
+        post('/api/messages/', {
           token: getGlobalData().token,
           salt: salt,
           message: message
+        }, (err, msg) => {
+          if (err) {
+            dispatch({
+              type: actions.MESSAGE_SUBMISSION_FAILED
+            });
+          } else {
+            dispatch({
+              type: actions.MESSAGE_SUBMISSION_SUCEEDED
+            });
+          }
         });
     }
   }
   onConnected() {
-    let socket = getGlobalData().socket;
-
-    let decryptMessage = (msg) => {
-      let { username: username, password: password} = getGlobalData();
-      msg.isUser = msg.name == username;
-      msg.message = decrypt(msg.message, password, msg.salt);
-      delete msg.salt;
-      return msg;
-    };
-
-    socket.on(messages.LOGOUT_RESPONSE, (msg) => {
-      if (msg.success) {
-        dispatch({
-          type: actions.LOGOUT_SUCCEEDED
-        });
-      } else {
-        dispatch({
-          type: actions.LOGOUT_FAILED,
-          error: 'Server Error'
-        });
-      }
-    });
-
-    socket.on(messages.GET_MESSAGE_BLOCK_RESPONSE, (msg) => {
-      if (msg.success) {
-        dispatch({
-          type: actions.RECEIVED_MESSAGE_BLOCK,
-          messages: msg.messages.map(decryptMessage)
-        });
-      } else {
-        dispatch({
-          type: actions.ERROR_FETCHING_MESSAGE_BLOCK
-        });
-      }
-    });
-
-    socket.on(messages.NEW_MESSAGE, (msg) => {
-      dispatch({
-        type: actions.RECEIVED_NEW_MESSAGE,
-        message: decryptMessage(msg)
+    function update() {
+      get('/api/messages/', {
+        token: getGlobalData().token,
+        start: 0,
+        count: MESSAGE_WINDOW_SIZE
+      }, (err, msg) => {
+        if (err || !msg.success) {
+          dispatch({
+            type: actions.ERROR_FETCHING_MESSAGE_BLOCK
+          });
+        } else if (msg.success) {
+          dispatch({
+            type: actions.RECEIVED_MESSAGE_BLOCK,
+            messages: msg.messages.map(decryptMessage)
+          });
+        }
       });
-    });
-
-    socket.emit(messages.GET_MESSAGE_BLOCK, {
-      token: getGlobalData().token,
-      start: 0,
-      count: MESSAGE_WINDOW_SIZE
-    });
+    }
+    setInterval(update, 2000);
+    update();
   }
 }

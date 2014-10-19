@@ -48,14 +48,19 @@ export function decrypt(message, password, salt) {
   return CryptoJS.enc.Latin1.stringify(CryptoJS.AES.decrypt(message, hash));
 }
 
-export function get(url, cb) {
+export function get(url, params, cb) {
   var xhr = new XMLHttpRequest();
   xhr.onload = () => {
-    cb(null, JSON.parse(xhr.responseText));
+    if (xhr.status == 200) {
+      cb(null, JSON.parse(xhr.responseText));
+    } else {
+      cb('Connection error');
+    }
   };
   xhr.onerror = (e) => {
     cb(e);
   };
+  url += '?' + Object.keys(params).map((param) => param + '=' + params[param]).join('&');
   xhr.open('get', url, true);
   xhr.send();
 }
@@ -63,7 +68,11 @@ export function get(url, cb) {
 export function post(url, params, cb) {
   var xhr = new XMLHttpRequest();
   xhr.onload = () => {
-    cb(null, JSON.parse(xhr.responseText));
+    if (xhr.status == 200) {
+      cb(null, JSON.parse(xhr.responseText));
+    } else {
+      cb('Connection error');
+    }
   };
   xhr.onerror = (e) => {
     cb(e);

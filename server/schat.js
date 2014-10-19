@@ -122,253 +122,259 @@ module.exports = function run(options) {
       });
     });
 
-      /*socket.on(messages.AUTH, function(msg) {
-
+    app.post('/api/logout', function(req, res) {
+      users.isTokenValid(decodeToken(req.body.token), function(err, valid) {
+        if (err) {
+          res.send({
+            success: false,
+            error: errors.SERVER_ERROR
+          });
+          logger.error('Error validating token: ' + err);
+        } else if (!valid) {
+          res.send({
+            success: false,
+            error: errors.UNAUTHORIZED
+          });
+        } else {
+          users.expireToken(req.body.token, function(err) {
+            if (err) {
+              res.send({
+                success: false,
+                error: errors.SERVER_ERROR
+              });
+              logger.error('Error validating token: ' + err);
+            } else {
+              res.send({
+                success: true
+              });
+            }
+          });
+        }
       });
+    });
 
-      socket.on(messages.LOGOUT, function(msg) {
-        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
-          if (err) {
-            socket.emit(messages.LOGOUT_RESPONSE, {
-              success: false,
-              error: errors.SERVER_ERROR
-            });
-            logger.error('Error validating token: ' + err);
-          } else if (!valid) {
-            socket.emit(messages.LOGOUT_RESPONSE, {
-              success: false,
-              error: errors.UNAUTHORIZED
-            });
-          } else {
-            users.expireToken(msg.token, function(err) {
+    app.post('/api/change_password', function(req, res) {
+      users.isTokenValid(decodeToken(req.body.token), function(err, valid) {
+        if (err) {
+          res.send({
+            success: false,
+            error: errors.SERVER_ERROR
+          });
+          logger.error('Error validating token: ' + err);
+        } else if (!valid) {
+          res.send({
+            success: false,
+            error: errors.UNAUTHORIZED
+          });
+        } else {
+          users.changePassword(req.body.token, req.body.oldPassword, req.body.newPassword, function(err) {
+            if (err) {
+              res.send({
+                success: false,
+                error: err == 'Invalid password' ? errors.INVALID_PASSWORD : errors.SERVER_ERROR
+              });
+            } else {
+              res.send({
+                success: true
+              });
+            }
+          });
+        }
+      });
+    });
+
+    app.get('/api/test', function(req, res) {
+      users.isTokenValid(decodeToken(req.query.token), function(err, valid) {
+        if (err) {
+          res.send({
+            success: false,
+            error: errors.SERVER_ERROR
+          });
+          logger.error('Error validating token: ' + err);
+        } else if (!valid) {
+          res.send({
+            success: false,
+            error: errors.UNAUTHORIZED
+          });
+        } else {
+          database.collection('test', function(err, col) {
+            if (err) {
+              res.send({
+                success: false,
+                error: errors.SERVER_ERROR
+              });
+              logger.error('Error getting the test collection: ' + err);
+              return;
+            }
+            col.findOne({}, function(err, item) {
               if (err) {
-                socket.emit(messages.LOGOUT_RESPONSE, {
+                res.send({
                   success: false,
                   error: errors.SERVER_ERROR
                 });
-                logger.error('Error validating token: ' + err);
-              } else {
-                socket.emit(messages.LOGOUT_RESPONSE, {
-                  success: true
-                });
-              }
-            });
-          }
-        });
-      });
-
-      socket.on(messages.CHANGE_PASSWORD, function(msg) {
-        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
-          if (err) {
-            socket.emit(messages.CHANGE_PASSWORD_RESPONSE, {
-              success: false,
-              error: errors.SERVER_ERROR
-            });
-            logger.error('Error validating token: ' + err);
-          } else if (!valid) {
-            socket.emit(messages.CHANGE_PASSWORD_RESPONSE, {
-              success: false,
-              error: errors.UNAUTHORIZED
-            });
-          } else {
-            users.changePassword(msg.token, msg.oldPassword, msg.newPassword, function(err) {
-              if (err) {
-                socket.emit(messages.CHANGE_PASSWORD_RESPONSE, {
-                  success: false,
-                  error: err == 'Invalid password' ? errors.INVALID_PASSWORD : errors.SERVER_ERROR
-                });
-              } else {
-                socket.emit(messages.CHANGE_PASSWORD_RESPONSE, {
-                  success: true
-                });
-              }
-            });
-          }
-        });
-      });
-
-      socket.on(messages.GET_TEST, function(msg) {
-        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
-          if (err) {
-            socket.emit(messages.GET_TEST_RESPONSE, {
-              success: false,
-              error: errors.SERVER_ERROR
-            });
-            logger.error('Error validating token: ' + err);
-          } else if (!valid) {
-            socket.emit(messages.GET_TEST_RESPONSE, {
-              success: false,
-              error: errors.UNAUTHORIZED
-            });
-          } else {
-            database.collection('test', function(err, col) {
-              if (err) {
-                socket.emit(messages.GET_TEST_RESPONSE, {
-                  success: false,
-                  error: errors.SERVER_ERROR
-                });
-                logger.error('Error getting the test collection: ' + err);
+                logger.error('Error getting the test item: ' + err);
                 return;
               }
-              col.findOne({}, function(err, item) {
-                if (err) {
-                  socket.emit(messages.GET_TEST_RESPONSE, {
-                    success: false,
-                    error: errors.SERVER_ERROR
-                  });
-                  logger.error('Error getting the test item: ' + err);
-                  return;
-                }
-                if (!item) {
-                  socket.emit(messages.GET_TEST_RESPONSE, {
-                    success: false,
-                    error: errors.TEST_NOT_SET
-                  });
-                } else {
-                  socket.emit(messages.GET_TEST_RESPONSE, {
-                    success: true,
-                    salt: item.salt,
-                    message: item.message
-                  });
-                }
-              });
-            });
-          }
-        });
-      });
-
-      socket.on(messages.SET_TEST, function(msg) {
-        var salt = msg.salt;
-        var message = msg.message;
-        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
-          if (err) {
-            socket.emit(messages.SET_TEST_RESPONSE, {
-              success: false,
-              error: errors.SERVER_ERROR
-            });
-            logger.error('Error validating token: ' + err);
-          } else if (!valid) {
-            socket.emit(messages.SET_TEST_RESPONSE, {
-              success: false,
-              error: errors.UNAUTHORIZED
-            });
-          } else {
-            database.collection('test', function(err, col) {
-              if (err) {
-                socket.emit(messages.SET_TEST_RESPONSE, {
+              if (!item) {
+                res.send({
                   success: false,
-                  error: errors.SERVER_ERROR
+                  error: errors.TEST_NOT_SET
                 });
-                logger.error('Error getting the test collection: ' + err);
-                return;
-              }
-              col.findOne({}, function(err, item) {
-                if (err) {
-                  socket.emit(messages.SET_TEST_RESPONSE, {
-                    success: false,
-                    error: errors.SERVER_ERROR
-                  });
-                  logger.error('Error finding the test message: ' + err);
-                  return;
-                }
-                if (item) {
-                  socket.emit(messages.SET_TEST_RESPONSE, {
-                    success: false,
-                    error: errors.INVALID_REQUEST
-                  });
-                  logger.warning('Client attempted to overwrite existing test message');
-                  return;
-                }
-                col.insert({
-                  salt: salt,
-                  message: message
-                }, { w: 1 }, function(err) {
-                  if (err) {
-                    socket.emit(messages.SET_TEST_RESPONSE, {
-                      success: false,
-                      error: errors.SERVER_ERROR
-                    });
-                    logger.error('Error inserting the test message: ' + err);
-                    return;
-                  }
-                  socket.emit(messages.SET_TEST_RESPONSE, {
-                    success: true
-                  });
-                });
-              });
-            });
-          }
-        });
-      });
-
-      socket.on(messages.GET_MESSAGE_BLOCK, function(msg) {
-        users.isTokenValid(decodeToken(msg.token), function(err, valid) {
-          if (err) {
-            socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
-              success: false,
-              error: errors.SERVER_ERROR
-            });
-            logger.error('err', 'Error validating token: ' + err);
-          } else if (!valid) {
-            socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
-              success: false,
-              error: errors.UNAUTHORIZED
-            });
-          } else {
-            var count = parseInt(msg.count);
-            if (isNaN(count)) {
-              count = 100;
-            }
-            var start = parseInt(msg.start);
-            if (isNaN(start)) {
-              start = 0;
-            }
-            collection.find({}, { _id: false }).sort({ time: -1 }).limit(count).skip(start).toArray(function(err, msgs) {
-              if (err) {
-                socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
-                  success: false,
-                  error: errors.SERVER_ERROR
-                });
-                logger.error('err', 'Error validating token: ' + err);
               } else {
-                socket.emit(messages.GET_MESSAGE_BLOCK_RESPONSE, {
+                res.send({
                   success: true,
-                  messages: msgs || []
+                  salt: item.salt,
+                  message: item.message
                 });
               }
             });
-          }
-        });
+          });
+        }
       });
+    });
 
-      socket.on(messages.SUBMIT_NEW_MESSAGE, function(msg) {
-        users.isTokenValid(decodeToken(msg.token), function (err, valid) {
-          if (err) {
-            logger.error('err', 'Error validating token: ' + err);
-          } else if (valid) {
-            users.getUsernameForToken(msg.token, function(err, username) {
+    app.post('/api/test', function(req, res) {
+      var salt = req.body.salt;
+      var message = req.body.message;
+      users.isTokenValid(decodeToken(req.body.token), function(err, valid) {
+        if (err) {
+          res.send({
+            success: false,
+            error: errors.SERVER_ERROR
+          });
+          logger.error('Error validating token: ' + err);
+        } else if (!valid) {
+          res.send({
+            success: false,
+            error: errors.UNAUTHORIZED
+          });
+        } else {
+          database.collection('test', function(err, col) {
+            if (err) {
+              res.send({
+                success: false,
+                error: errors.SERVER_ERROR
+              });
+              logger.error('Error getting the test collection: ' + err);
+              return;
+            }
+            col.findOne({}, function(err, item) {
               if (err) {
-                logger.error('err', 'Error getting a username from a token: ' + err);
+                res.send({
+                  success: false,
+                  error: errors.SERVER_ERROR
+                });
+                logger.error('Error finding the test message: ' + err);
                 return;
               }
-              var entry = {
-                message: msg.message,
-                salt: msg.salt,
-                name: username,
-                time: Date.now()
-              };
-              collection.insert(entry, { w: 1 }, function(err) {
+              if (item) {
+                res.send({
+                  success: false,
+                  error: errors.INVALID_REQUEST
+                });
+                logger.warning('Client attempted to overwrite existing test message');
+                return;
+              }
+              col.insert({
+                salt: salt,
+                message: message
+              }, { w: 1 }, function(err) {
                 if (err) {
-                  logger.error('Error inserting a message: ' + err);
+                  res.send({
+                    success: false,
+                    error: errors.SERVER_ERROR
+                  });
+                  logger.error('Error inserting the test message: ' + err);
                   return;
                 }
-                io.emit(messages.NEW_MESSAGE, entry);
+                res.send({
+                  success: true
+                });
               });
             });
-          }
-        });
+          });
+        }
       });
-    });*/
+    });
+
+    app.get('/api/messages', function(req, res) {
+      users.isTokenValid(decodeToken(req.query.token), function(err, valid) {
+        if (err) {
+          res.send({
+            success: false,
+            error: errors.SERVER_ERROR
+          });
+          logger.error('err', 'Error validating token: ' + err);
+        } else if (!valid) {
+          res.send({
+            success: false,
+            error: errors.UNAUTHORIZED
+          });
+        } else {
+          var count = parseInt(req.query.count);
+          if (isNaN(count)) {
+            count = 100;
+          }
+          var start = parseInt(req.query.start);
+          if (isNaN(start)) {
+            start = 0;
+          }
+          collection.find({}, { _id: false }).sort({ time: -1 }).limit(count).skip(start).toArray(function(err, msgs) {
+            if (err) {
+              res.send({
+                success: false,
+                error: errors.SERVER_ERROR
+              });
+              logger.error('err', 'Error validating token: ' + err);
+            } else {
+              res.send({
+                success: true,
+                messages: msgs || []
+              });
+            }
+          });
+        }
+      });
+    });
+
+    app.post('/api/messages', function(req, res) {
+      users.isTokenValid(decodeToken(req.body.token), function (err, valid) {
+        if (err) {
+          res.send({
+            success: false
+          });
+          logger.error('err', 'Error validating token: ' + err);
+        } else if (valid) {
+          users.getUsernameForToken(req.body.token, function(err, username) {
+            if (err) {
+              res.send({
+                success: false
+              });
+              logger.error('err', 'Error getting a username from a token: ' + err);
+              return;
+            }
+            var entry = {
+              message: req.body.message,
+              salt: req.body.salt,
+              name: username,
+              time: Date.now()
+            };
+            collection.insert(entry, { w: 1 }, function(err) {
+              if (err) {
+                res.send({
+                  success: false
+                });
+                logger.error('Error inserting a message: ' + err);
+              } else {
+                res.send({
+                  success: true
+                });
+              }
+            });
+          });
+        }
+      });
+    });
 
     // Start the server
     var server = app.listen(options.port, '127.0.0.1', function() {

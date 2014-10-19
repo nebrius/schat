@@ -23,6 +23,7 @@ THE SOFTWARE.
 */
 
 import { Link, dispatch, getGlobalData } from 'flvx';
+import { get, post } from 'util';
 import { actions } from 'actions';
 import { decrypt, encrypt } from 'util';
 import errors from 'shared/errors';
@@ -37,7 +38,6 @@ let password = Symbol();
 
 export class DecryptLink extends Link {
   dispatch(action) {
-    let socket = getGlobalData().socket;
     switch(action.type) {
       case actions.DECRYPTION_PASSWORD_SUBMITTED:
         let decrypted = decrypt(this[test].message, action.password, this[test].salt);
@@ -68,22 +68,42 @@ export class DecryptLink extends Link {
         } else {
           let encrypted = encrypt(TEST_MESSAGE, action.password1);
           this[password] = action.password1;
-          socket.emit(messages.SET_TEST, {
+          post('/api/test/', {
             salt: encrypted.salt,
             message: encrypted.message,
             token: getGlobalData().token
+          }, (err, msg) => {
+            if (err) {
+              dispatch({
+                type: actions.DECRYPTION_FAILED,
+                error: 'Connection error'
+              });
+            } else if (msg.success) {
+              dispatch({
+                type: actions.DECRYPTION_SUCCEEDED,
+                password: this[password]
+              });
+            } else {
+              dispatch({
+                type: actions.DECRYPTION_FAILED,
+                error: 'Server error'
+              });
+            }
           });
         }
         break;
     }
   }
   onConnected() {
-    let socket = getGlobalData().socket;
-    socket.emit(messages.GET_TEST, {
+    get('/api/test/', {
       token: getGlobalData().token
-    });
-    socket.on(messages.GET_TEST_RESPONSE, (msg) => {
-      if (msg.success) {
+    }, (err, msg) => {
+      if (err) {
+        dispatch({
+          type: actions.DECRYPTION_FAILED,
+          error: 'Connection error'
+        })
+      } else if (msg.success) {
         let { message: message, salt: salt } = msg;
         this[test] = {
           message: message,
@@ -99,20 +119,7 @@ export class DecryptLink extends Link {
       } else {
         dispatch({
           type: actions.DECRYPTION_FAILED,
-          error: 'Server Error'
-        });
-      }
-    });
-    socket.on(messages.SET_TEST_RESPONSE, (msg) => {
-      if (msg.success) {
-        dispatch({
-          type: actions.DECRYPTION_SUCCEEDED,
-          password: this[password]
-        });
-      } else {
-        dispatch({
-          type: actions.DECRYPTION_FAILED,
-          error: 'Server Error'
+          error: 'Server error'
         });
       }
     });

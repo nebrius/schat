@@ -41,7 +41,7 @@ export class GlobalStoreController extends StoreController {
         this[data].token = action.token;
         this[data].extras = action.extras;
         let storedExtras = JSON.parse(localStorage.getItem('extras'));
-        if (this[data].extras.admin && (!storedExtras || !storedExtras.admin)) {
+        if (this[data].extras && this[data].extras.admin && (!storedExtras || !storedExtras.admin)) {
           localStorage.setItem('username', this[data].username);
           localStorage.setItem('token', this[data].token);
           localStorage.setItem('extras', JSON.stringify(this[data].extras));

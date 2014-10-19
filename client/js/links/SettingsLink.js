@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 import { Link, dispatch, getGlobalData, route } from 'flvx';
 import { actions } from 'actions';
+import { post } from 'util';
 import errors from 'shared/errors';
 
 export class SettingsLink extends Link {
@@ -41,26 +42,27 @@ export class SettingsLink extends Link {
             error: 'New password must not be empty'
           });
         } else {
-          let { socket: socket, token: token } = getGlobalData();
-          socket.emit(messages.CHANGE_PASSWORD, {
-            token: token,
+          post('/api/change_password', {
+            token: getGlobalData().token,
             oldPassword: action.currentPassword,
             newPassword: action.newPassword1
+          }, (err, msg) => {
+            if (err) {
+              dispatch({
+                type: actions.CHANGE_PASSWORD_FAILED,
+                error: 'Connection Error'
+              });
+            } else if (msg.success) {
+              route('login');
+            } else {
+              dispatch({
+                type: actions.CHANGE_PASSWORD_FAILED,
+                error: msg.error == errors.INVALID_PASSWORD ? 'Invalid current password' : 'Server Error'
+              });
+            }
           });
         }
         break;
     }
-  }
-  onConnected() {
-    getGlobalData().socket.on(messages.CHANGE_PASSWORD_RESPONSE, (msg) => {
-      if (msg.success) {
-        route('login');
-      } else {
-        dispatch({
-          type: actions.CHANGE_PASSWORD_FAILED,
-          error: msg.error == errors.INVALID_PASSWORD ? 'Invalid current password' : 'Server Error'
-        });
-      }
-    });
   }
 }
