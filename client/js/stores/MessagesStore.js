@@ -37,7 +37,10 @@ export class MessagesStore extends Store {
   dispatch(action) {
     switch(action.type) {
       case actions.RECEIVED_UPDATE:
-        this[messages].unshift(...action.messages);
+        if (action.messages.length) {
+          this[lockedToBottom] = true;
+          this[messages].unshift(...action.messages);
+        }
         this[userOnline] = true;
         this[otherOnline] = action.otherOnline;
         this[otherName] = action.otherName;
@@ -47,31 +50,19 @@ export class MessagesStore extends Store {
         this[userOnline] = false;
         aggregate();
         break;
-      case actions.RECEIVED_NEW_MESSAGE:
-        this[messages].unshift(action.message);
-        if (getGlobalData().admin) {
-          if (this[titleChange]) {
-            clearTimeout(this[titleChange]);
-          }
-          document.title = 'New Message';
-          this[titleChange] = setTimeout(() => {
-            this[titleChange] = null;
-            document.title = 'SChat';
-          }, 2000);
-        }
-        aggregate();
-        break;
     }
   }
 
   render() {
-    return {
+    let data = {
       messages: this[messages],
       lockedToBottom: this[lockedToBottom],
       userOnline: this[userOnline],
       otherName: this[otherName],
       otherOnline: this[otherOnline]
     };
+    this[lockedToBottom] = false;
+    return data;
   }
 
   onConnected() {
