@@ -55,10 +55,15 @@ body {
   border-bottom: 1px solid lightgrey;
   padding: 5px;
   height: 51px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
-.header_view > button {
-  float: right;
+.header_status {
+  color: lightgrey;
 }
 
 .message_creation_view {
@@ -122,6 +127,14 @@ body {
 .message_view_header {
   display: -webkit-flex;
   display: flex;
+}
+
+.message_view_user_offline {
+  color: lightcoral;
+}
+
+.message_view_user_online {
+  color: lightgreen;
 }
 
 .message_view_time {

@@ -31,6 +31,18 @@ export var HeaderView = React.createClass({
     return React.DOM.div({
       className: 'header_view'
     }, [
+      React.DOM.div({
+        className: 'header_status'
+      }, [
+        React.DOM.div({
+          className: this.props.userOnline ? 'message_view_user_online' : 'message_view_user_offline'
+        }, 'You are ' + (this.props.userOnline ? 'online' : 'offline')),
+        React.DOM.div({
+          className: this.props.otherOnline ? 'message_view_user_online' : 'message_view_user_offline'
+        }, this.props.otherName ?
+          (this.props.otherName + ' is ' + (this.props.otherOnline ? 'online' : 'offline')) :
+          null)
+      ]),
       React.DOM.button({
         className: 'btn btn-default dropdown-toggle',
         type: 'button',

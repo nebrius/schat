@@ -27,19 +27,24 @@ import { actions } from 'actions';
 
 let titleChange = Symbol();
 let messages = Symbol();
-let error = Symbol();
 let lockedToBottom = Symbol();
+let userOnline = Symbol();
+let otherName = Symbol();
+let otherOnline = Symbol();
 
 export class MessagesStore extends Store {
 
   dispatch(action) {
     switch(action.type) {
-      case actions.RECEIVED_MESSAGE_BLOCK:
-        this[messages].unshift.apply(this[messages], action.messages);
+      case actions.RECEIVED_UPDATE:
+        this[messages].unshift(...action.messages);
+        this[userOnline] = true;
+        this[otherOnline] = action.otherOnline;
+        this[otherName] = action.otherName;
         aggregate();
         break;
-      case actions.ERROR_FETCHING_MESSAGE_BLOCK:
-        this[error] = 'Could not fetch messages from server';
+      case actions.ERROR_FETCHING_UPDATE:
+        this[userOnline] = false;
         aggregate();
         break;
       case actions.RECEIVED_NEW_MESSAGE:
@@ -62,14 +67,18 @@ export class MessagesStore extends Store {
   render() {
     return {
       messages: this[messages],
-      error: this[error],
-      lockedToBottom: this[lockedToBottom]
+      lockedToBottom: this[lockedToBottom],
+      userOnline: this[userOnline],
+      otherName: this[otherName],
+      otherOnline: this[otherOnline]
     };
   }
 
   onConnected() {
     this[messages] = [];
     this[lockedToBottom] = true;
+    this[userOnline] = true;
+    this[otherOnline] = false;
     aggregate();
   }
 }

@@ -53,6 +53,7 @@ module.exports = function run(options) {
     database: 'schat_users'
   });
   var database, collection;
+  var onlineStatus = {};
   users.load(function(err) {
     if (err) {
       throw err;
@@ -70,7 +71,16 @@ module.exports = function run(options) {
             process.exit(1);
           }
           collection = col;
-          start();
+          users.getUserList(function (err, userList) {
+            if (err) {
+              logger.error('Could not get userlist: ' + err);
+              process.exit(1);
+            }
+            userList.forEach(function (user) {
+              onlineStatus[user] = false;
+            });
+            start();
+          });
         });
       }
     );
@@ -167,7 +177,7 @@ module.exports = function run(options) {
             error: errors.UNAUTHORIZED
           });
         } else {
-          users.changePassword(req.body.token, req.body.oldPassword, req.body.newPassword, function(err) {
+          users.changePassword(decodeToken(req.body.token), req.body.oldPassword, req.body.newPassword, function(err) {
             if (err) {
               res.send({
                 success: false,
@@ -297,44 +307,6 @@ module.exports = function run(options) {
       });
     });
 
-    app.get('/api/messages', function(req, res) {
-      users.isTokenValid(decodeToken(req.query.token), function(err, valid) {
-        if (err) {
-          res.send({
-            success: false,
-            error: errors.SERVER_ERROR
-          });
-          logger.error('err', 'Error validating token: ' + err);
-        } else if (!valid) {
-          res.send({
-            success: false,
-            error: errors.UNAUTHORIZED
-          });
-        } else {
-          var criteria = {};
-          if (req.query.lastMessage) {
-            criteria.time = {
-              $gt: parseInt(req.query.lastMessage)
-            };
-          }
-          collection.find(criteria).sort({ time: -1 }).limit(100).toArray(function(err, msgs) {
-            if (err) {
-              res.send({
-                success: false,
-                error: errors.SERVER_ERROR
-              });
-              logger.error('err', 'Error validating token: ' + err);
-            } else {
-              res.send({
-                success: true,
-                messages: msgs || []
-              });
-            }
-          });
-        }
-      });
-    });
-
     app.post('/api/messages', function(req, res) {
       users.isTokenValid(decodeToken(req.body.token), function (err, valid) {
         if (err) {
@@ -343,7 +315,7 @@ module.exports = function run(options) {
           });
           logger.error('err', 'Error validating token: ' + err);
         } else if (valid) {
-          users.getUsernameForToken(req.body.token, function(err, username) {
+          users.getUsernameForToken(decodeToken(req.body.token), function(err, username) {
             if (err) {
               res.send({
                 success: false
@@ -369,6 +341,73 @@ module.exports = function run(options) {
                 });
               }
             });
+          });
+        }
+      });
+    });
+
+    app.get('/api/update', function(req, res) {
+      users.isTokenValid(decodeToken(req.query.token), function(err, valid) {
+        if (err) {
+          res.send({
+            success: false,
+            error: errors.SERVER_ERROR
+          });
+          logger.error('err', 'Error validating token: ' + err);
+        } else if (!valid) {
+          res.send({
+            success: false,
+            error: errors.UNAUTHORIZED
+          });
+        } else {
+          collection.find({
+            time: {
+              $gt: parseInt(req.query.lastMessage)
+            }
+          }).sort({ time: -1 }).limit(100).toArray(function(err, msgs) {
+            if (err) {
+              res.send({
+                success: false,
+                error: errors.SERVER_ERROR
+              });
+              logger.error('err', 'Error validating token: ' + err);
+            } else {
+              users.getUsernameForToken(decodeToken(req.query.token), function(err, username) {
+                if (err) {
+                  res.send({
+                    success: false,
+                    error: errors.SERVER_ERROR
+                  });
+                  logger.error('err', 'Error getting username for token: ' + err);
+                } else if (!username) {
+                  res.send({
+                    success: false,
+                    error: errors.SERVER_ERROR
+                  });
+                  logger.error('err', 'Internal error: no username for token');
+                } else {
+                  onlineStatus[username] = {
+                    online: true,
+                    lastUpdated: Date.now()
+                  };
+                  var otherName;
+                  for (var user in onlineStatus) {
+                    if (user != username) {
+                      otherName = user;
+                      if (Date.now() - onlineStatus[user].lastUpdated > 5000) {
+                        onlineStatus[user] = false;
+                      }
+                    }
+                  }
+                  res.send({
+                    success: true,
+                    messages: msgs || [],
+                    otherName: otherName,
+                    otherOnline: onlineStatus[otherName] && onlineStatus[otherName].online
+                  });
+                }
+              });
+            }
           });
         }
       });

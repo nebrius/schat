@@ -32,7 +32,7 @@ export var ChatView = React.createClass({
     return React.DOM.div({
       className: 'chat_view'
     }, [
-      new HeaderView(),
+      new HeaderView(this.props),
       new MessageHistoryView(this.props),
       new MessageCreationView()
     ]);

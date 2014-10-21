@@ -61,19 +61,23 @@ export class ChatLink extends Link {
   onConnected() {
     var lastMessage;
     function update() {
-      get('/api/messages/', {
+      get('/api/update/', {
         token: getGlobalData().token,
         lastMessage: lastMessage
       }, (err, msg) => {
         if (err || !msg.success) {
           dispatch({
-            type: actions.ERROR_FETCHING_MESSAGE_BLOCK
+            type: actions.ERROR_FETCHING_UPDATE
           });
-        } else if (msg.success && msg.messages.length) {
-          lastMessage = msg.messages[0].time;
+        } else if (msg.success) {
+          if (msg.messages.length) {
+            lastMessage = msg.messages[0].time;
+          }
           dispatch({
-            type: actions.RECEIVED_MESSAGE_BLOCK,
-            messages: msg.messages.map(decryptMessage)
+            type: actions.RECEIVED_UPDATE,
+            messages: msg.messages.map(decryptMessage),
+            otherName: msg.otherName,
+            otherOnline: msg.otherOnline
           });
         }
       });
