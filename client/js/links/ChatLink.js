@@ -82,7 +82,15 @@ export class ChatLink extends Link {
         }
       });
     }
-    setInterval(update, 2000);
+    var interval = setInterval(update, 2000);
+    document.addEventListener('visibilitychange', () => {
+      clearInterval(interval);
+      if (document.visibilityState == 'visible') {
+        interval = setInterval(update, 2000);
+      } else {
+        interval = setInterval(update, 120000);
+      }
+    });
     update();
   }
 }
