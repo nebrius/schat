@@ -378,7 +378,6 @@ module.exports = function run(options) {
               });
               logger.error('err', 'Internal error: no username for token');
             } else {
-              console.log(username);
               userStatus[username].typing = req.body.isTyping;
               res.send({
                 success: true
