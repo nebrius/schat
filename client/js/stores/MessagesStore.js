@@ -25,12 +25,12 @@ THE SOFTWARE.
 import { Store, aggregate, getGlobalData } from 'flvx';
 import { actions } from 'actions';
 
-let titleChange = Symbol();
 let messages = Symbol();
 let lockedToBottom = Symbol();
 let userOnline = Symbol();
 let otherName = Symbol();
 let otherOnline = Symbol();
+let otherTyping = Symbol();
 
 export class MessagesStore extends Store {
 
@@ -44,6 +44,7 @@ export class MessagesStore extends Store {
         this[userOnline] = true;
         this[otherOnline] = action.otherOnline;
         this[otherName] = action.otherName;
+        this[otherTyping] = action.otherTyping;
         aggregate();
         break;
       case actions.ERROR_FETCHING_UPDATE:
@@ -59,7 +60,8 @@ export class MessagesStore extends Store {
       lockedToBottom: this[lockedToBottom],
       userOnline: this[userOnline],
       otherName: this[otherName],
-      otherOnline: this[otherOnline]
+      otherOnline: this[otherOnline],
+      otherTyping: this[otherTyping]
     };
     this[lockedToBottom] = false;
     return data;

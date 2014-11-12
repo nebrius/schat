@@ -28,6 +28,10 @@ import { actions } from 'actions';
 
 export var HeaderView = React.createClass({
   render() {
+    console.log(this.props.otherName ?
+          (this.props.otherName + ' is ' + (this.props.otherOnline ? 'online' : 'offline')) +
+            (this.props.otherTyping ? ', typing' : '') :
+          null);
     return React.DOM.div({
       className: 'header_view'
     }, [
@@ -40,7 +44,8 @@ export var HeaderView = React.createClass({
         React.DOM.div({
           className: this.props.otherOnline ? 'message_view_user_online' : 'message_view_user_offline'
         }, this.props.otherName ?
-          (this.props.otherName + ' is ' + (this.props.otherOnline ? 'online' : 'offline')) :
+          (this.props.otherName + ' is ' + (this.props.otherOnline ? 'online' : 'offline')) +
+            (this.props.otherTyping ? ', typing' : '') :
           null)
       ]),
       React.DOM.button({

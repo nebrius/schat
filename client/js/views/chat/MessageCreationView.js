@@ -27,23 +27,34 @@ import { dispatch } from 'flvx';
 import { actions } from 'actions';
 
 export var MessageCreationView = React.createClass({
+
+  onChange() {
+    let contents = document.getElementById('message').value;
+    dispatch({
+      type: contents ? actions.UPDATED_MESSAGE : actions.CLEARED_MESSAGE
+    });
+  },
+
+  onSubmit(e) {
+    e.preventDefault();
+    dispatch({
+      type: actions.MESSAGE_SUBMITTED,
+      message: document.getElementById('message').value
+    });
+    this.getDOMNode().children[0].value = '';
+  },
+
   render() {
     return React.DOM.form({
       className: 'message_creation_view',
-      onSubmit: (e) => {
-        e.preventDefault();
-        dispatch({
-          type: actions.MESSAGE_SUBMITTED,
-          message: document.getElementById('message').value
-        });
-        this.getDOMNode().children[0].value = '';
-      }
+      onSubmit: this.onSubmit
     }, [
       React.DOM.input({
         id: 'message',
         type: 'text',
         placeholder: 'Type your message',
-        className: 'form-control'
+        className: 'form-control',
+        onChange: this.onChange
       }),
       React.DOM.button({
         type: 'submit',

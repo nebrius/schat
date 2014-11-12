@@ -39,6 +39,35 @@ let decryptMessage = (msg) => {
 export class ChatLink extends Link {
   dispatch(action) {;
     switch(action.type) {
+      case actions.UPDATED_MESSAGE:
+        if (this.isTyping) {
+          return;
+        }
+        this.isTyping = true;
+        clearTimeout(this.updateTimeout);
+        this.updateTimeout = setTimeout(() => {
+          this.isTyping = false;
+          post('/api/typing', {
+            token: getGlobalData().token,
+            isTyping: false
+          }, () => {});
+        }, 5000);
+        post('/api/typing', {
+          token: getGlobalData().token,
+          isTyping: true
+        }, () => {});
+        break;
+      case actions.CLEARED_MESSAGE:
+        if (!this.isTyping) {
+          return;
+        }
+        this.isTyping = false;
+        clearTimeout(this.updateTimeout);
+        post('/api/typing', {
+          token: getGlobalData().token,
+          isTyping: false
+        }, () => {});
+        break;
       case actions.MESSAGE_SUBMITTED:
         let { salt: salt, message: message } = encrypt(action.message, getGlobalData().password);
         post('/api/messages/', {
@@ -77,7 +106,8 @@ export class ChatLink extends Link {
             type: actions.RECEIVED_UPDATE,
             messages: msg.messages.map(decryptMessage),
             otherName: msg.otherName,
-            otherOnline: msg.otherOnline
+            otherOnline: msg.otherOnline,
+            otherTyping: msg.otherTyping
           });
         }
       });

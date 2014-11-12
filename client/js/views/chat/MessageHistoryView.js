@@ -48,7 +48,7 @@ export var MessageHistoryView = React.createClass({
       className: 'message_history_view'
     }, [
       React.DOM.div({
-        className: 'message_history_view_container',
+        className: 'message_history_view_container'
       }, this.props.messages.map((message) => new MessageView(message)))
     ]);
   }

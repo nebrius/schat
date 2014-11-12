@@ -53,7 +53,7 @@ module.exports = function run(options) {
     database: 'schat_users'
   });
   var database, collection;
-  var onlineStatus = {};
+  var userStatus = {};
   users.load(function(err) {
     if (err) {
       throw err;
@@ -77,7 +77,11 @@ module.exports = function run(options) {
               process.exit(1);
             }
             userList.forEach(function (user) {
-              onlineStatus[user] = false;
+              userStatus[user] = {
+                typing: false,
+                online: false,
+                lastUpdate: 0
+              };
             });
             start();
           });
@@ -346,6 +350,45 @@ module.exports = function run(options) {
       });
     });
 
+    app.post('/api/typing', function(req, res) {
+      users.isTokenValid(decodeToken(req.body.token), function(err, valid) {
+        if (err) {
+          res.send({
+            success: false,
+            error: errors.SERVER_ERROR
+          });
+          logger.error('err', 'Error validating token: ' + err);
+        } else if (!valid) {
+          res.send({
+            success: false,
+            error: errors.UNAUTHORIZED
+          });
+        } else {
+          users.getUsernameForToken(decodeToken(req.body.token), function(err, username) {
+            if (err) {
+              res.send({
+                success: false,
+                error: errors.SERVER_ERROR
+              });
+              logger.error('err', 'Error getting username for token: ' + err);
+            } else if (!username) {
+              res.send({
+                success: false,
+                error: errors.SERVER_ERROR
+              });
+              logger.error('err', 'Internal error: no username for token');
+            } else {
+              console.log(username);
+              userStatus[username].typing = req.body.isTyping;
+              res.send({
+                success: true
+              });
+            }
+          });
+        }
+      });
+    });
+
     app.get('/api/update', function(req, res) {
       users.isTokenValid(decodeToken(req.query.token), function(err, valid) {
         if (err) {
@@ -386,16 +429,14 @@ module.exports = function run(options) {
                   });
                   logger.error('err', 'Internal error: no username for token');
                 } else {
-                  onlineStatus[username] = {
-                    online: true,
-                    lastUpdated: Date.now()
-                  };
+                  userStatus[username].online = true;
+                  userStatus[username].lastUpdated = Date.now();
                   var otherName;
-                  for (var user in onlineStatus) {
+                  for (var user in userStatus) {
                     if (user != username) {
                       otherName = user;
-                      if (Date.now() - onlineStatus[user].lastUpdated > 5000) {
-                        onlineStatus[user] = false;
+                      if (Date.now() - userStatus[user].lastUpdated > 5000) {
+                        userStatus[user].online = false;
                       }
                     }
                   }
@@ -403,7 +444,8 @@ module.exports = function run(options) {
                     success: true,
                     messages: msgs || [],
                     otherName: otherName,
-                    otherOnline: onlineStatus[otherName] && onlineStatus[otherName].online
+                    otherOnline: userStatus[otherName].online,
+                    otherTyping: userStatus[otherName].typing
                   });
                 }
               });
