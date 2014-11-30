@@ -54,6 +54,12 @@ export class GlobalStoreController extends StoreController {
       case actions.DECRYPTION_SUCCEEDED:
         this[data].password = action.password;
         break;
+      case actions.TOKEN_EXPIRED:
+        localStorage.setItem('username', null);
+        localStorage.setItem('token', null);
+        localStorage.setItem('extras', null);
+        route('login');
+        break;
     }
   }
 

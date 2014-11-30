@@ -112,9 +112,13 @@ export class DecryptLink extends Link {
         dispatch({
           type: actions.DECRYPTION_PASSWORD_EXISTS
         });
-      } else if (msg.error == errors.TEST_NOT_SET){
+      } else if (msg.error == errors.TEST_NOT_SET) {
         dispatch({
           type: actions.DECRYPTION_PASSWORD_NEEDED
+        });
+      } else if (msg.error == errors.UNAUTHORIZED) {
+        dispatch({
+          type: actions.TOKEN_EXPIRED
         });
       } else {
         dispatch({
