@@ -26,11 +26,16 @@ var gulp = require('gulp');
 var traceur = require('gulp-traceur');
 var sourcemaps = require('gulp-sourcemaps');
 var del = require('del');
+var uglify = require('gulp-uglify');
 
 var FLUX_LIBRARY = 'flvx.amd.js';
 
 gulp.task('default', ['clean'], function() {
   return gulp.start(['index.html', 'flvx', 'flvx-map', 'libs', 'lib-maps', 'shared', 'css', 'images', 'js']);
+});
+
+gulp.task('prod', ['clean'], function() {
+  return gulp.start(['index.html', 'flvx', 'flvx-map', 'libs', 'lib-maps', 'shared', 'css', 'images', 'js-prod']);
 });
 
 gulp.task('index.html', function() {
@@ -75,6 +80,18 @@ gulp.task('js', function() {
         experimental: true,
         modules: 'amd'
       }))
+    .pipe(sourcemaps.write('../maps'))
+    .pipe(gulp.dest('client-dist/js'));
+});
+
+gulp.task('js-prod', function() {
+  return gulp.src('client/js/**/*')
+    .pipe(sourcemaps.init())
+      .pipe(traceur({
+        experimental: true,
+        modules: 'amd'
+      }))
+      .pipe(uglify())
     .pipe(sourcemaps.write('../maps'))
     .pipe(gulp.dest('client-dist/js'));
 });
