@@ -35,7 +35,7 @@ gulp.task('default', ['clean'], function() {
 });
 
 gulp.task('prod', ['clean'], function() {
-  return gulp.start(['index.html', 'flvx', 'flvx-map', 'libs', 'lib-maps', 'shared', 'css', 'images', 'js-prod']);
+  return gulp.start(['index.html', 'flvx', 'libs', 'shared', 'css', 'images', 'js-prod']);
 });
 
 gulp.task('index.html', function() {
@@ -86,13 +86,11 @@ gulp.task('js', function() {
 
 gulp.task('js-prod', function() {
   return gulp.src('client/js/**/*')
-    .pipe(sourcemaps.init())
-      .pipe(traceur({
-        experimental: true,
-        modules: 'amd'
-      }))
-      .pipe(uglify())
-    .pipe(sourcemaps.write('../maps'))
+    .pipe(traceur({
+      experimental: true,
+      modules: 'amd'
+    }))
+    .pipe(uglify())
     .pipe(gulp.dest('client-dist/js'));
 });
 
